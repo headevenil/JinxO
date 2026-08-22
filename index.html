@@ -1128,6 +1128,14 @@
       function sm(b, r, c, v) {if (v === 0) delete b.marks[r + '-' + c]; else b.marks[r + '-' + c] = v; save()}
       function gw(b, r, c) {return b.words[r + '-' + c] || ''}
 
+      function getBoardName(b) {
+        var match = b.name.match(/^(?:Board|보드)\s+(\d+)$/i);
+        if (match) {
+          return t('boardDefault', { n: match[1] });
+        }
+        return b.name; // Preserves custom board names
+      }
+
       /* ── Dynamic Confirmation Modal ── */
       var pendingAction = null,
         confirmModal = document.getElementById('confirmModal'),
@@ -1232,7 +1240,7 @@
           var act = b.id === state.activeId, sc = b.phase === 'play' ? calcScore(b).total : 0;
           var dotCls = b.phase === 'setup' ? 'setup' : 'play', dotLabel = b.phase === 'setup' ? t('setup') : t('playing');
           var meta = dotLabel; if (b.phase === 'play' && sc > 0) meta += ' \u00B7 ' + sc + ' ' + t('pts');
-          h += '<div class="bi' + (act ? ' active' : '') + '" data-id="' + b.id + '"><div class="bi-info"><div class="bi-name">' + esc(b.name) + '</div><div class="bi-meta"><span class="bi-dot ' + dotCls + '"></span>' + meta + '</div></div><button class="bi-del" data-id="' + b.id + '" aria-label="Delete">&times;</button></div>';
+          h += '<div class="bi' + (act ? ' active' : '') + '" data-id="' + b.id + '"><div class="bi-info"><div class="bi-name">' + esc(getBoardName(b)) + '</div><div class="bi-meta"><span class="bi-dot ' + dotCls + '"></span>' + meta + '</div></div><button class="bi-del" data-id="' + b.id + '" aria-label="Delete">&times;</button></div>';
         });
         list.innerHTML = h;
         list.querySelectorAll('.bi').forEach(function (el) {
@@ -1298,7 +1306,7 @@
         var bi = {rows: [], cols: [], cells: {}};
         var h = '<div class="bv">';
         h += '<div class="board-section">';
-        h += '<div class="bv-name">' + esc(b.name) + '</div>';
+        h += '<div class="bv-name">' + esc(getBoardName(b)) + '</div>';
         h += '<div class="board-grid">' + gridCells(b, 'setup') + '</div>';
         h += '<div class="row-labels">' + rowLabelHtml(bi) + '</div>';
         h += '<div class="col-labels">' + colLabelHtml(bi) + '</div>';
@@ -1343,7 +1351,7 @@
         clearTimeout(lpTmr);
         var bi = bingoInfo(b);
         var h = '<div class="bv">';
-        h += '<div class="bv-name">' + esc(b.name) + '</div>';
+        h += '<div class="bv-name">' + esc(getBoardName(b)) + '</div>';
         h += '<div class="board-section"><div class="board-grid">' + gridCells(b, 'play') + '</div>';
         h += '<div class="row-labels">' + rowLabelHtml(bi) + '</div>';
         h += '<div class="col-labels">' + colLabelHtml(bi) + '</div>';
