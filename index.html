@@ -674,10 +674,12 @@
     /* ── Actions ── */
     .board-footer {
       grid-column: 1;
+      grid-row: 4;
       margin-top: 18px;
       display: flex;
       flex-direction: column;
-      align-items: center
+      align-items: center;
+      min-height: 85px; 
     }
 
     .bv-acts {
@@ -1351,8 +1353,9 @@
         clearTimeout(lpTmr);
         var bi = bingoInfo(b);
         var h = '<div class="bv">';
+        h += '<div class="board-section">';
         h += '<div class="bv-name">' + esc(getBoardName(b)) + '</div>';
-        h += '<div class="board-section"><div class="board-grid">' + gridCells(b, 'play') + '</div>';
+        h += '<div class="board-grid">' + gridCells(b, 'play') + '</div>';
         h += '<div class="row-labels">' + rowLabelHtml(bi) + '</div>';
         h += '<div class="col-labels">' + colLabelHtml(bi) + '</div>';
         h += '<div class="board-footer">';
