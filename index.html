@@ -441,6 +441,9 @@
     }
 
     .bv-name {
+      grid-column: 1;
+      grid-row: 1;
+      text-align: center;
       font-size: 14px;
       font-weight: 600;
       color: var(--text-2);
@@ -457,7 +460,7 @@
 
     .board-grid {
       grid-column: 1;
-      grid-row: 1;
+      grid-row: 2;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       grid-template-rows: repeat(3, 1fr);
@@ -470,7 +473,7 @@
 
     .row-labels {
       grid-column: 2;
-      grid-row: 1;
+      grid-row: 2;
       display: grid;
       grid-template-rows: repeat(3, 1fr);
       padding: var(--board-pad) 0;
@@ -494,7 +497,7 @@
 
     .col-labels {
       grid-column: 1;
-      grid-row: 2;
+      grid-row: 3;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       padding: 0 var(--board-pad);
@@ -1044,8 +1047,10 @@
     </button>
     <div class="logo">JinxO</div>
     <div class="hdr-spacer"></div>
-    <div class="score-pill" id="scorePill"><span class="score-num" id="scoreNum">0</span><span
-        class="score-lbl">pts</span></div>
+    <div class="score-pill" id="scorePill">
+      <span class="score-num" id="scoreNum">0</span>
+      <span class="score-lbl" data-i18n="pts">pts</span>
+    </div>
     <button class="btn-new" id="newBtn" data-i18n="new">+ New</button>
   </header>
 
@@ -1082,8 +1087,8 @@
 
       var LANG = localStorage.getItem('jinxo_lang') || (navigator.language.toLowerCase().startsWith('ko') ? 'ko' : 'en');
       var I18N = {
-        en: {new: '+ New', boards: 'Boards', newBoard: '+ New Board', noBoards: 'No boards yet', setup: 'Setup', playing: 'Playing', pts: 'pts', createBoard: 'Create Board', emptyDesc: 'Create a board and fill it with words to start playing.', wordPlaceholder: 'word', startGame: 'Start Game', fillCells: 'Fill each cell with a word, then start.', allCells: 'All cells need a word first', tapCycle: 'Tap: cycle', longPressX: 'Long-press: X', reset: 'Reset', editBoard: 'Edit Board', confirmAction: 'Confirm Action', areYouSure: 'Are you sure?', cancel: 'Cancel', confirm: 'Confirm', deleteBoard: 'Delete Board?', deleteDesc: 'This action cannot be undone.', delete: 'Delete', resetBoard: 'Reset Board?', resetDesc: 'This will clear all circles, stars, and X marks on this board.', editBoardTitle: 'Edit Board?', editDesc: 'Editing the board will reset and clear all current markings.', circled: 'Circled', starred: 'Starred', rowBingo: 'Row {n} bingo', colBingo: 'Col {n} bingo'},
-        ko: {new: '+ 새로 만들기', boards: '보드', newBoard: '+ 새 보드', noBoards: '아직 보드가 없습니다', setup: '설정', playing: '게임 중', pts: '점', createBoard: '보드 만들기', emptyDesc: '보드를 만들고 단어를 입력하여 게임을 시작하세요.', wordPlaceholder: '단어', startGame: '게임 시작', fillCells: '각 칸에 단어를 입력한 후 시작하세요.', allCells: '모든 칸에 단어를 입력해주세요.', tapCycle: '탭: 표시 변경', longPressX: '길게 누르기: X', reset: '초기화', editBoard: '보드 수정', confirmAction: '확인', areYouSure: '정말 진행하시겠습니까?', cancel: '취소', confirm: '확인', deleteBoard: '보드를 삭제할까요?', deleteDesc: '이 작업은 되돌릴 수 없습니다.', delete: '삭제', resetBoard: '보드를 초기화할까요?', resetDesc: '이 보드의 모든 동그라미, 별, X 표시가 삭제됩니다.', editBoardTitle: '보드를 수정할까요?', editDesc: '보드를 수정하면 현재 표시가 모두 초기화됩니다.', circled: '동그라미', starred: '별', rowBingo: '{n}행 빙고', colBingo: '{n}열 빙고'}
+        en: {new: '+ New', boards: 'Boards', newBoard: '+ New Board', noBoards: 'No boards yet', setup: 'Setup', playing: 'Playing', pts: 'pts', createBoard: 'Create Board', emptyDesc: 'Create a board and fill it with words to start playing.', wordPlaceholder: 'word', startGame: 'Start Game', fillCells: 'Fill each cell with a word, then start.', allCells: 'All cells need a word first', tapCycle: 'Tap: cycle', longPressX: 'Long-press: X', reset: 'Reset', editBoard: 'Edit Board', confirmAction: 'Confirm Action', areYouSure: 'Are you sure?', cancel: 'Cancel', confirm: 'Confirm', deleteBoard: 'Delete Board?', deleteDesc: 'This action cannot be undone.', delete: 'Delete', resetBoard: 'Reset Board?', resetDesc: 'This will clear all circles, stars, and X marks on this board.', editBoardTitle: 'Edit Board?', editDesc: 'Editing the board will reset and clear all current markings.', circled: 'Circled', starred: 'Starred', rowBingo: 'Row {n} bingo', colBingo: 'Col {n} bingo', boardDefault: 'Board {n}'},
+        ko: {new: '+ 새로 만들기', boards: '보드', newBoard: '+ 새 보드', noBoards: '아직 보드가 없습니다', setup: '설정', playing: '게임 중', pts: '점', createBoard: '보드 만들기', emptyDesc: '보드를 만들고 단어를 입력하여 게임을 시작하세요.', wordPlaceholder: '단어', startGame: '게임 시작', fillCells: '각 칸에 단어를 입력한 후 시작하세요.', allCells: '모든 칸에 단어를 입력해주세요.', tapCycle: '탭: 표시 변경', longPressX: '길게 누르기: X', reset: '초기화', editBoard: '보드 수정', confirmAction: '확인', areYouSure: '정말 진행하시겠습니까?', cancel: '취소', confirm: '확인', deleteBoard: '보드를 삭제할까요?', deleteDesc: '이 작업은 되돌릴 수 없습니다.', delete: '삭제', resetBoard: '보드를 초기화할까요?', resetDesc: '이 보드의 모든 동그라미, 별, X 표시가 삭제됩니다.', editBoardTitle: '보드를 수정할까요?', editDesc: '보드를 수정하면 현재 표시가 모두 초기화됩니다.', circled: '동그라미', starred: '별', rowBingo: '{n}행 빙고', colBingo: '{n}열 빙고', boardDefault: '보드 {n}'}
       };
       function t(k, v) {var x = I18N[LANG][k] || I18N.en[k] || k; if (v) Object.keys(v).forEach(function (a) {x = x.replace('{' + a + '}', v[a])}); return x}
       function applyLanguage() {document.documentElement.lang = LANG; document.querySelectorAll('[data-i18n]').forEach(function (e) {e.textContent = t(e.getAttribute('data-i18n'))}); document.getElementById('langEn').classList.toggle('active', LANG === 'en'); document.getElementById('langKo').classList.toggle('active', LANG === 'ko')}
@@ -1109,7 +1114,7 @@
       function activeBoard() {return getBoard(state.activeId)}
       function nextNum() {var s = {}; state.boards.forEach(function (b) {var m = b.name.match(/\d+/); if (m) s[+m[0]] = 1}); var n = 1; while (s[n]) n++; return n}
       function createBoard() {
-        var b = {id: uid(), name: 'Board ' + nextNum(), phase: 'setup', words: {}, marks: {}};
+        var b = {id: uid(), name: t('boardDefault', {n: nextNum()}), phase: 'setup', words: {}, marks: {}};
         for (var r = 1; r <= 3; r++)for (var c = 1; c <= 3; c++)b.words[r + '-' + c] = '';
         state.boards.push(b); state.activeId = b.id; save(); closeSb(); prevBingos = null; render();
       }
@@ -1237,7 +1242,11 @@
 
       function renderMain() {
         var b = activeBoard();
-        if (!b) {main.innerHTML = '<div class="empty"><h1>JinxO</h1><p>Create a board and fill it with words to start playing.</p><button class="btn-primary" id="empBtn">Create Board</button></div>'; document.getElementById('empBtn').onclick = createBoard; return }
+        if (!b) {
+          main.innerHTML = '<div class="empty"><h1>JinxO</h1><p>' + t('emptyDesc') + '</p><button class="btn-primary" id="empBtn">' + t('createBoard') + '</button></div>'; 
+          document.getElementById('empBtn').onclick = createBoard; 
+          return;
+        }
         if (b.phase === 'setup') renderSetup(b); else renderPlay(b);
       }
 
@@ -1282,12 +1291,13 @@
       function renderSetup(b) {
         var bi = {rows: [], cols: [], cells: {}};
         var h = '<div class="bv">';
+        h += '<div class="board-section">';
         h += '<div class="bv-name">' + esc(b.name) + '</div>';
-        h += '<div class="board-section"><div class="board-grid">' + gridCells(b, 'setup') + '</div>';
+        h += '<div class="board-grid">' + gridCells(b, 'setup') + '</div>';
         h += '<div class="row-labels">' + rowLabelHtml(bi) + '</div>';
         h += '<div class="col-labels">' + colLabelHtml(bi) + '</div>';
-        h += '<div class="board-footer"><div class="bv-acts"><button class="btn-full" id="startBtn">Start Game</button>';
-        h += '<p class="hint">Fill each cell with a word, then start.</p></div></div></div></div>';
+        h += '<div class="board-footer"><div class="bv-acts"><button class="btn-full" id="startBtn">' + t('startGame') + '</button>';
+        h += '<p class="hint">' + t('fillCells') + '</p></div></div></div></div>';
         main.innerHTML = h;
         main.querySelectorAll('.ci').forEach(function (inp) {
           inp.addEventListener('input', function () {
