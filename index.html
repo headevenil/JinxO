@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no,viewport-fit=cover">
+  <title>JinxO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FAF7F2;
+      --header: #3D3229;
+      --board: #BBADA0;
+      --cell: #CDC1B4;
+      --surface: #FFFFFF;
+      --surface-2: #F5F0E8;
+      --text: #2C2418;
+      --text-2: #6B5E50;
+      --text-3: #9B8E80;
+      --border: #E5DED4;
+      --circle: #5B9BD5;
+      --circle-bg: #DAEAF7;
+      --star: #E8A838;
+      --star-bg: #FDF0DB;
+      --x-c: #D05555;
+      --x-bg: #F9DEDE;
+      --accent: #E8A838;
+      --accent-h: #D49530;
+      --bingo: #5BA87C;
+      --danger: #D05555;
+      --shadow: 0 8px 32px rgba(44, 36, 24, .10);
+      --r: 10px;
+      --r-sm: 6px;
+      --font-d: 'DM Serif Display', Georgia, serif;
+      --font-b: 'Plus Jakarta Sans', 'Noto Sans KR', system-ui, sans-serif;
+      --board-gap: 8px;
+      --board-pad: 8px;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    html,
+    body {
+      height: 100%;
+      overflow: hidden
+    }
+
+    body {
+      font-family: var(--font-b);
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent
+    }
+
+    /* ── Header ── */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 16px;
+      min-height: 56px;
+      height: calc(56px + env(safe-area-inset-top, 0));
+      padding-top: env(safe-area-inset-top, 0);
+      background: var(--header);
+      flex-shrink: 0;
+      z-index: 10
+    }
+
+    .menu-btn {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, .10);
+      border: none;
+      cursor: pointer;
+      color: #fff;
+      border-radius: var(--r-sm);
+      flex-shrink: 0;
+      transition: background .15s
+    }
+
+    .menu-btn:hover {
+      background: rgba(255, 255, 255, .18)
+    }
+
+    .menu-btn:active {
+      background: rgba(255, 255, 255, .06)
+    }
+
+    .menu-btn svg {
+      width: 20px;
+      height: 20px;
+      stroke: #fff;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round
+    }
+
+    .logo {
+      font-family: var(--font-d);
+      font-size: 22px;
+      color: #fff;
+      flex-shrink: 0;
+      letter-spacing: -.5px
+    }
+
+    .hdr-spacer {
+      flex: 1
+    }
+
+    .score-pill {
+      display: none;
+      align-items: baseline;
+      gap: 4px;
+      padding: 4px 12px;
+      background: rgba(255, 255, 255, .12);
+      border-radius: var(--r-sm)
+    }
+
+    .score-pill.vis {
+      display: flex
+    }
+
+    .score-num {
+      font-size: 20px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
+      font-variant-numeric: tabular-nums
+    }
+
+    .score-lbl {
+      font-size: 9px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, .5);
+      text-transform: uppercase;
+      letter-spacing: .8px
+    }
+
+    .btn-new {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--r-sm);
+      padding: 0 14px;
+      height: 36px;
+      font-family: var(--font-b);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s, transform .1s;
+      white-space: nowrap
+    }
+
+    .btn-new:hover {
+      background: var(--accent-h)
+    }
+
+    .btn-new:active {
+      transform: scale(.96)
+    }
+
+    /* ── Sidebar ── */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(44, 36, 24, .3);
+      z-index: 20;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s
+    }
+
+    .overlay.open {
+      opacity: 1;
+      pointer-events: all
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 280px;
+      background: var(--surface);
+      z-index: 30;
+      transform: translateX(-100%);
+      transition: transform .3s cubic-bezier(.4, 0, .2, 1);
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow)
+    }
+
+    .sidebar.open {
+      transform: translateX(0)
+    }
+
+    .sb-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      height: 56px;
+      padding-top: env(safe-area-inset-top, 0);
+      min-height: calc(56px + env(safe-area-inset-top, 0));
+      border-bottom: 1px solid var(--border)
+    }
+
+    .sb-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 1.5px
+    }
+
+    .sb-close {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-3);
+      border-radius: var(--r-sm);
+      font-size: 20px;
+      transition: background .15s
+    }
+
+    .sb-close:hover {
+      background: var(--surface-2)
+    }
+
+    .sb-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px
+    }
+
+    .sb-empty {
+      padding: 40px 16px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-3)
+    }
+
+    .bi {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      border-radius: var(--r-sm);
+      cursor: pointer;
+      transition: background .15s
+    }
+
+    .bi:hover {
+      background: var(--surface-2)
+    }
+
+    .bi.active {
+      background: var(--surface-2);
+      box-shadow: inset 3px 0 0 var(--accent)
+    }
+
+    .bi-info {
+      flex: 1;
+      min-width: 0
+    }
+
+    .bi-name {
+      font-size: 14px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis
+    }
+
+    .bi-meta {
+      font-size: 11px;
+      color: var(--text-3);
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      gap: 5px
+    }
+
+    .bi-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0
+    }
+
+    .bi-dot.setup {
+      background: var(--accent)
+    }
+
+    .bi-dot.play {
+      background: var(--bingo)
+    }
+
+    .bi-del {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-3);
+      border-radius: var(--r-sm);
+      font-size: 16px;
+      opacity: 0;
+      transition: opacity .15s, background .15s, color .15s;
+      flex-shrink: 0
+    }
+
+    .bi:hover .bi-del {
+      opacity: 1
+    }
+
+    .bi-del:hover {
+      background: var(--x-bg);
+      color: var(--danger)
+    }
+
+    .sb-foot {
+      padding: 12px 8px;
+      padding-bottom: calc(12px + env(safe-area-inset-bottom, 0));
+      border-top: 1px solid var(--border)
+    }
+
+    .sb-new {
+      width: 100%;
+      padding: 10px;
+      background: var(--surface-2);
+      border: 1.5px dashed var(--border);
+      border-radius: var(--r-sm);
+      font-family: var(--font-b);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: background .15s, border-color .15s
+    }
+
+    .sb-new:hover {
+      background: var(--surface);
+      border-color: var(--text-3)
+    }
+
+    @media(hover:none) {
+      .bi-del {
+        opacity: .5
+      }
+    }
+
+    /* ── Main (2048-style centering) ── */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      padding-bottom: max(16px, env(safe-area-inset-bottom, 0));
+      overflow: hidden
+    }
+
+    /* ── Empty State ── */
+    .empty {
+      text-align: center;
+      max-width: 300px
+    }
+
+    .empty h1 {
+      font-family: var(--font-d);
+      font-size: 42px;
+      color: var(--header);
+      margin-bottom: 8px
+    }
+
+    .empty p {
+      font-size: 14px;
+      color: var(--text-2);
+      line-height: 1.5;
+      margin-bottom: 28px
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 32px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--r);
+      font-family: var(--font-b);
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s, transform .1s
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-h)
+    }
+
+    .btn-primary:active {
+      transform: scale(.97)
+    }
+
+    /* ── Board View ── */
+    .bv {
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      align-items: center
+    }
+
+    .bv-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-2);
+      margin-bottom: 14px
+    }
+
+    /* ── Board Layout (grid with labels) ── */
+    .board-section {
+      display: grid;
+      grid-template-columns: 1fr 24px;
+      grid-template-rows: auto auto;
+      width: 100%
+    }
+
+    .board-grid {
+      grid-column: 1;
+      grid-row: 1;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: var(--board-gap);
+      padding: var(--board-pad);
+      background: var(--board);
+      border-radius: var(--r);
+      box-shadow: var(--shadow)
+    }
+
+    .row-labels {
+      grid-column: 2;
+      grid-row: 1;
+      display: grid;
+      grid-template-rows: repeat(3, 1fr);
+      padding: var(--board-pad) 0;
+      gap: var(--board-gap)
+    }
+
+    .row-labels span {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-3);
+      user-select: none;
+      transition: color .2s
+    }
+
+    .row-labels span.bingo {
+      color: var(--bingo)
+    }
+
+    .col-labels {
+      grid-column: 1;
+      grid-row: 2;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      padding: 0 var(--board-pad);
+      gap: var(--board-gap);
+      margin-top: 5px
+    }
+
+    .col-labels span {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-3);
+      user-select: none;
+      transition: color .2s
+    }
+
+    .col-labels span.bingo {
+      color: var(--bingo)
+    }
+
+    /* ── Cell ── */
+    .cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      border-radius: var(--r-sm);
+      min-height: 100px;
+      padding: 10px;
+      transition: background-color .12s;
+      user-select: none;
+      overflow: hidden
+    }
+
+    /* ── Setup Cell ── */
+    .cell.st {
+      background: var(--surface);
+      cursor: text
+    }
+
+    .cell.st:focus-within {
+      box-shadow: 0 0 0 2px var(--accent);
+      z-index: 1
+    }
+
+    .cell.st.err {
+      box-shadow: 0 0 0 2px var(--danger)
+    }
+
+    .ci {
+      width: 100%;
+      max-height: 100%;
+      border: none;
+      outline: none;
+      background: 0 0;
+      text-align: center;
+      font-family: var(--font-b);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      padding: 0;
+      resize: none;
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.25;
+      field-sizing: content;
+      margin: auto;
+    }
+
+    .ci::placeholder {
+      color: var(--text-3);
+      font-weight: 400;
+    }
+
+    /* ── Play Cell ── */
+    .cell.pl {
+      background: var(--cell);
+      cursor: pointer;
+      touch-action: none;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-user-drag: none
+    }
+
+    .cell.pl.pressed {
+      transform: scale(.96)
+    }
+
+    .cw {
+      width: 100%;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-2);
+      text-align: center;
+      line-height: 1.25;
+      word-break: break-word;
+      white-space: pre-wrap;
+      transition: color .12s;
+    }
+
+    .cind {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      font-size: 11px;
+      line-height: 1;
+      font-weight: 700
+    }
+
+    .cell.c1 {
+      background: var(--circle-bg)
+    }
+
+    .cell.c1 .cw {
+      color: var(--text)
+    }
+
+    .cell.c1 .cind {
+      color: var(--circle)
+    }
+
+    .cell.c2 {
+      background: var(--star-bg)
+    }
+
+    .cell.c2 .cw {
+      color: var(--text)
+    }
+
+    .cell.c2 .cind {
+      color: var(--star)
+    }
+
+    .cell.c3 {
+      background: var(--x-bg)
+    }
+
+    .cell.c3 .cw {
+      color: var(--text-2);
+      text-decoration: line-through;
+      text-decoration-color: var(--x-c);
+      text-decoration-thickness: 2px
+    }
+
+    .cell.c3 .cind {
+      color: var(--x-c)
+    }
+
+    .cell.bf {
+      animation: bf .4s ease
+    }
+
+    @keyframes bf {
+
+      0%,
+      100% {
+        box-shadow: none
+      }
+
+      50% {
+        box-shadow: 0 0 0 3px rgba(91, 168, 124, .4)
+      }
+    }
+
+    /* ── Actions ── */
+    .board-footer {
+      grid-column: 1;
+      margin-top: 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center
+    }
+
+    .bv-acts {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      width: 100%
+    }
+
+    .btn-full {
+      width: 100%;
+      padding: 14px 20px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--r);
+      font-family: var(--font-b);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s, transform .1s
+    }
+
+    .btn-full:hover {
+      background: var(--accent-h)
+    }
+
+    .btn-full:active {
+      transform: scale(.97)
+    }
+
+    .hint {
+      font-size: 12px;
+      color: var(--text-3);
+      text-align: center;
+      line-height: 1.4
+    }
+
+    /* ── Legend ── */
+    .leg {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+      font-size: 11px;
+      color: var(--text-3)
+    }
+
+    .leg-i {
+      display: flex;
+      align-items: center;
+      gap: 5px
+    }
+
+    .leg-s {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      font-weight: 700
+    }
+
+    .leg-s.ls1 {
+      background: var(--circle-bg);
+      color: var(--circle)
+    }
+
+    .leg-s.ls2 {
+      background: var(--star-bg);
+      color: var(--star)
+    }
+
+    .leg-s.ls3 {
+      background: var(--x-bg);
+      color: var(--x-c)
+    }
+
+    /* ── Secondary Buttons ── */
+    .sec-btns {
+      margin-top: 14px;
+      display: flex;
+      gap: 8px
+    }
+
+    .btn-sec {
+      padding: 8px 16px;
+      background: transparent;
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-sm);
+      font-family: var(--font-b);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: background .15s, border-color .15s, transform .1s
+    }
+
+    .btn-sec:hover {
+      background: var(--surface-2);
+      border-color: var(--text-3)
+    }
+
+    .btn-sec:active {
+      transform: scale(.97)
+    }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: calc(24px + env(safe-area-inset-bottom, 0));
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--header);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: var(--r-sm);
+      font-size: 13px;
+      font-weight: 600;
+      z-index: 60;
+      transition: transform .25s cubic-bezier(.4, 0, .2, 1);
+      pointer-events: none;
+      white-space: nowrap;
+      box-shadow: var(--shadow)
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0)
+    }
+
+    /* ── Focus ── */
+    .btn-new:focus-visible,
+    .btn-primary:focus-visible,
+    .btn-full:focus-visible,
+    .btn-sec:focus-visible,
+    .sb-close:focus-visible,
+    .menu-btn:focus-visible {
+      outline: 2px solid #fff;
+      outline-offset: 2px
+    }
+
+    .cell.pl:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: -1px
+    }
+
+    @media(prefers-reduced-motion:reduce) {
+
+      *,
+      *::before,
+      *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important
+      }
+    }
+
+    /* ── Responsive ── */
+    @media(max-width:400px) {
+      .cell {
+        min-height: 90px
+      }
+
+      .cw {
+        font-size: 13px
+      }
+
+      .ci {
+        font-size: 13px
+      }
+
+      .row-labels span,
+      .col-labels span {
+        font-size: 12px
+      }
+
+      .bv-name {
+        margin-bottom: 10px
+      }
+    }
+
+    @media(max-width:340px) {
+      .cell {
+        min-height: 80px
+      }
+
+      .bv {
+        max-width: 320px
+      }
+
+      .board-section {
+        grid-template-columns: 1fr 20px
+      }
+    }
+
+    @media(min-width:500px) {
+      .cell {
+        min-height: 130px
+      }
+
+      .cw {
+        font-size: 16px
+      }
+
+      .ci {
+        font-size: 16px
+      }
+
+      :root {
+        --board-pad: 12px;
+        --board-gap: 12px
+      }
+
+      .bv {
+        max-width: 560px
+      }
+
+      .row-labels span,
+      .col-labels span {
+        font-size: 16px
+      }
+
+      .board-section {
+        grid-template-columns: 1fr 28px
+      }
+    }
+
+    @media(min-width:768px) {
+      .cell {
+        min-height: 160px
+      }
+
+      .cw {
+        font-size: 18px
+      }
+
+      :root {
+        --board-pad: 14px;
+        --board-gap: 14px
+      }
+
+      .bv {
+        max-width: 660px
+      }
+
+      .board-section {
+        grid-template-columns: 1fr 32px
+      }
+
+      .row-labels span,
+      .col-labels span {
+        font-size: 18px
+      }
+    }
+
+    .lang-switch {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px
+    }
+
+    .lang-switch button {
+      flex: 1;
+      padding: 7px 4px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      font-family: var(--font-b);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-2);
+      cursor: pointer
+    }
+
+    .lang-switch button.active {
+      background: var(--surface-2);
+      color: var(--text);
+      border-color: var(--text-3)
+    }
+
+    /* ── Confirm Modal ── */
+    .confirm-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(44, 36, 24, .4);
+      z-index: 70;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease
+    }
+
+    .confirm-modal.open {
+      opacity: 1;
+      pointer-events: all
+    }
+
+    .cm-card {
+      background: var(--surface);
+      border-radius: var(--r);
+      padding: 20px;
+      width: 100%;
+      max-width: 300px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      transform: scale(.95);
+      transition: transform .2s ease
+    }
+
+    .confirm-modal.open .cm-card {
+      transform: scale(1)
+    }
+
+    .cm-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px
+    }
+
+    .cm-desc {
+      font-size: 13px;
+      color: var(--text-2);
+      margin-bottom: 20px
+    }
+
+    .cm-btns {
+      display: flex;
+      gap: 8px
+    }
+
+    .cm-btns button {
+      flex: 1
+    }
+
+    .btn-danger {
+      padding: 8px 16px;
+      background: var(--danger);
+      color: #fff;
+      border: none;
+      border-radius: var(--r-sm);
+      font-family: var(--font-b);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s, transform .1s
+    }
+
+    .btn-danger:hover {
+      background: #b84343
+    }
+
+    .btn-danger:active {
+      transform: scale(.97)
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="header">
+    <button class="menu-btn" id="menuBtn" aria-label="Menu">
+      <svg viewBox="0 0 20 20">
+        <line x1="3" y1="5" x2="17" y2="5" />
+        <line x1="3" y1="10" x2="17" y2="10" />
+        <line x1="3" y1="15" x2="17" y2="15" />
+      </svg>
+    </button>
+    <div class="logo">JinxO</div>
+    <div class="hdr-spacer"></div>
+    <div class="score-pill" id="scorePill"><span class="score-num" id="scoreNum">0</span><span
+        class="score-lbl">pts</span></div>
+    <button class="btn-new" id="newBtn" data-i18n="new">+ New</button>
+  </header>
+
+  <div class="overlay" id="overlay"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-head"><span class="sb-title" data-i18n="boards">Boards</span><button class="sb-close"
+        id="closeBtn">&times;</button></div>
+    <div class="sb-body" id="boardList"></div>
+    <div class="sb-foot"><button class="sb-new" id="sbNewBtn" data-i18n="newBoard">+ New Board</button>
+      <div class="lang-switch"><button type="button" id="langEn">English</button><button type="button"
+          id="langKo">한국어</button></div>
+    </div>
+  </aside>
+
+  <main class="main" id="main"></main>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="confirm-modal" id="confirmModal">
+    <div class="cm-card">
+      <div class="cm-title" id="cmTitle" data-i18n="confirmAction">Confirm Action</div>
+      <div class="cm-desc" id="cmDesc" data-i18n="areYouSure">Are you sure?</div>
+      <div class="cm-btns">
+        <button class="btn-sec" id="cmCancel" data-i18n="cancel">Cancel</button>
+        <button class="btn-danger" id="cmConfirm" data-i18n="confirm">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var LANG = localStorage.getItem('jinxo_lang') || (navigator.language.toLowerCase().startsWith('ko') ? 'ko' : 'en');
+      var I18N = {
+        en: {new: '+ New', boards: 'Boards', newBoard: '+ New Board', noBoards: 'No boards yet', setup: 'Setup', playing: 'Playing', pts: 'pts', createBoard: 'Create Board', emptyDesc: 'Create a board and fill it with words to start playing.', wordPlaceholder: 'word', startGame: 'Start Game', fillCells: 'Fill each cell with a word, then start.', allCells: 'All cells need a word first', tapCycle: 'Tap: cycle', longPressX: 'Long-press: X', reset: 'Reset', editBoard: 'Edit Board', confirmAction: 'Confirm Action', areYouSure: 'Are you sure?', cancel: 'Cancel', confirm: 'Confirm', deleteBoard: 'Delete Board?', deleteDesc: 'This action cannot be undone.', delete: 'Delete', resetBoard: 'Reset Board?', resetDesc: 'This will clear all circles, stars, and X marks on this board.', editBoardTitle: 'Edit Board?', editDesc: 'Editing the board will reset and clear all current markings.', circled: 'Circled', starred: 'Starred', rowBingo: 'Row {n} bingo', colBingo: 'Col {n} bingo'},
+        ko: {new: '+ 새로 만들기', boards: '보드', newBoard: '+ 새 보드', noBoards: '아직 보드가 없습니다', setup: '설정', playing: '게임 중', pts: '점', createBoard: '보드 만들기', emptyDesc: '보드를 만들고 단어를 입력하여 게임을 시작하세요.', wordPlaceholder: '단어', startGame: '게임 시작', fillCells: '각 칸에 단어를 입력한 후 시작하세요.', allCells: '모든 칸에 단어를 입력해주세요.', tapCycle: '탭: 표시 변경', longPressX: '길게 누르기: X', reset: '초기화', editBoard: '보드 수정', confirmAction: '확인', areYouSure: '정말 진행하시겠습니까?', cancel: '취소', confirm: '확인', deleteBoard: '보드를 삭제할까요?', deleteDesc: '이 작업은 되돌릴 수 없습니다.', delete: '삭제', resetBoard: '보드를 초기화할까요?', resetDesc: '이 보드의 모든 동그라미, 별, X 표시가 삭제됩니다.', editBoardTitle: '보드를 수정할까요?', editDesc: '보드를 수정하면 현재 표시가 모두 초기화됩니다.', circled: '동그라미', starred: '별', rowBingo: '{n}행 빙고', colBingo: '{n}열 빙고'}
+      };
+      function t(k, v) {var x = I18N[LANG][k] || I18N.en[k] || k; if (v) Object.keys(v).forEach(function (a) {x = x.replace('{' + a + '}', v[a])}); return x}
+      function applyLanguage() {document.documentElement.lang = LANG; document.querySelectorAll('[data-i18n]').forEach(function (e) {e.textContent = t(e.getAttribute('data-i18n'))}); document.getElementById('langEn').classList.toggle('active', LANG === 'en'); document.getElementById('langKo').classList.toggle('active', LANG === 'ko')}
+      function setLanguage(l) {LANG = l; localStorage.setItem('jinxo_lang', l); render(); applyLanguage()}
+
+
+      var KEY = 'jinxo_nks', LP = 450, state = load(),
+        lpTmr = null, lpFired = false, prevBingos = null;
+
+      /* ── Persistence ── */
+      function load() {
+        try {var d = JSON.parse(localStorage.getItem(KEY)); if (d && d.boards) return d} catch (e) { }
+        try {var d2 = JSON.parse(localStorage.getItem('jinxo_v2')); if (d2 && d2.boards) {localStorage.setItem(KEY, JSON.stringify(d2)); return d2} } catch (e) { }
+        return {boards: [], activeId: null}
+      }
+      function save() {localStorage.setItem(KEY, JSON.stringify(state))}
+      function uid() {return Date.now().toString(36) + Math.random().toString(36).slice(2, 7)}
+      function esc(s) {var d = document.createElement('div'); d.textContent = s; return d.innerHTML}
+      function aesc(s) {return s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}
+
+      /* ── Board Helpers ── */
+      function getBoard(id) {return state.boards.find(function (b) {return b.id === id})}
+      function activeBoard() {return getBoard(state.activeId)}
+      function nextNum() {var s = {}; state.boards.forEach(function (b) {var m = b.name.match(/\d+/); if (m) s[+m[0]] = 1}); var n = 1; while (s[n]) n++; return n}
+      function createBoard() {
+        var b = {id: uid(), name: 'Board ' + nextNum(), phase: 'setup', words: {}, marks: {}};
+        for (var r = 1; r <= 3; r++)for (var c = 1; c <= 3; c++)b.words[r + '-' + c] = '';
+        state.boards.push(b); state.activeId = b.id; save(); closeSb(); prevBingos = null; render();
+      }
+      function gm(b, r, c) {return b.marks[r + '-' + c] || 0}
+      function sm(b, r, c, v) {if (v === 0) delete b.marks[r + '-' + c]; else b.marks[r + '-' + c] = v; save()}
+      function gw(b, r, c) {return b.words[r + '-' + c] || ''}
+
+      /* ── Dynamic Confirmation Modal ── */
+      var pendingAction = null,
+        confirmModal = document.getElementById('confirmModal'),
+        cmTitle = document.getElementById('cmTitle'),
+        cmDesc = document.getElementById('cmDesc'),
+        cmCancel = document.getElementById('cmCancel'),
+        cmConfirm = document.getElementById('cmConfirm');
+
+      function openModal(options) {
+        cmTitle.textContent = options.title;
+        cmDesc.textContent = options.desc;
+        cmConfirm.textContent = options.buttonText || 'Confirm';
+        pendingAction = options.onConfirm;
+        confirmModal.classList.add('open');
+      }
+
+      function closeModal() {
+        pendingAction = null;
+        confirmModal.classList.remove('open');
+      }
+
+      cmCancel.onclick = closeModal;
+      cmConfirm.onclick = function () {
+        if (pendingAction) pendingAction();
+        closeModal();
+      };
+
+      /* Delete Handler */
+      function openDeleteModal(id) {
+        openModal({
+          title: t('deleteBoard'),
+          desc: t('deleteDesc'),
+          buttonText: t('delete'),
+          onConfirm: function () {
+            deleteBoard(id);
+          }
+        });
+      }
+
+      function deleteBoard(id) {
+        state.boards = state.boards.filter(function (b) {return b.id !== id;});
+        if (state.activeId === id) state.activeId = state.boards.length ? state.boards[0].id : null;
+        save();
+        render();
+      }
+
+      /* ── Scoring ── */
+      function eligible(m) {return m === 1 || m === 2}
+      function calcScore(b) {
+        var pts = 0, details = [], sc = 0, st = 0;
+        for (var k in b.marks) {var v = b.marks[k]; if (v === 1) sc++; if (v === 2) st++}
+        if (sc) details.push({l: t('circled') + ' (' + sc + ')', v: sc});
+        if (st) details.push({l: t('starred') + ' (' + st + ')', v: st * 3}); // Updated to 3 points per star
+        for (var i = 1; i <= 3; i++) {
+          var rf = true, cf = true;
+          for (var j = 1; j <= 3; j++) {if (!eligible(gm(b, i, j))) rf = false; if (!eligible(gm(b, j, i))) cf = false}
+          if (rf) details.push({l: t('rowBingo', {n: i}), v: i});
+          if (cf) details.push({l: t('colBingo', {n: i}), v: i});
+        }
+        for (var d = 0; d < details.length; d++)pts += details[d].v;
+        return {total: pts, details: details}
+      }
+      function bingoInfo(b) {
+        var rows = [], cols = [], cells = {}, i, j;
+        for (i = 1; i <= 3; i++) {var ok = true; for (j = 1; j <= 3; j++)if (!eligible(gm(b, i, j))) {ok = false; break} if (ok) {rows.push(i); for (j = 1; j <= 3; j++)cells[i + '-' + j] = 1} }
+        for (i = 1; i <= 3; i++) {var ok2 = true; for (j = 1; j <= 3; j++)if (!eligible(gm(b, j, i))) {ok2 = false; break} if (ok2) {cols.push(i); for (j = 1; j <= 3; j++)cells[j + '-' + i] = 1} }
+        return {rows: rows, cols: cols, cells: cells}
+      }
+
+      /* ── Sidebar ── */
+      var sidebar = document.getElementById('sidebar'), overlayEl = document.getElementById('overlay');
+      function openSb() {sidebar.classList.add('open'); overlayEl.classList.add('open')}
+      function closeSb() {sidebar.classList.remove('open'); overlayEl.classList.remove('open')}
+      document.getElementById('menuBtn').onclick = openSb;
+      document.getElementById('closeBtn').onclick = closeSb;
+      overlayEl.onclick = closeSb;
+      document.getElementById('newBtn').onclick = createBoard;
+      document.getElementById('sbNewBtn').onclick = createBoard;
+      document.getElementById('langEn').onclick = function () {setLanguage('en')};
+      document.getElementById('langKo').onclick = function () {setLanguage('ko')};
+
+      /* ── Toast ── */
+      var toastEl = document.getElementById('toast'), toastTmr = null;
+      function toast(msg) {clearTimeout(toastTmr); toastEl.textContent = msg; toastEl.classList.add('show'); toastTmr = setTimeout(function () {toastEl.classList.remove('show')}, 2400)}
+
+      /* ── Render ── */
+      var main = document.getElementById('main'), scorePill = document.getElementById('scorePill'), scoreNum = document.getElementById('scoreNum');
+
+      function render() {renderSb(); renderMain(); updateHdr()}
+
+      function updateHdr() {
+        var b = activeBoard();
+        if (b && b.phase === 'play') {scorePill.classList.add('vis'); scoreNum.textContent = calcScore(b).total}
+        else {scorePill.classList.remove('vis')}
+      }
+
+      function renderSb() {
+        var list = document.getElementById('boardList');
+        if (!state.boards.length) {list.innerHTML = '<div class="sb-empty">' + t('noBoards') + '</div>'; return }
+        var h = '';
+        state.boards.forEach(function (b) {
+          var act = b.id === state.activeId, sc = b.phase === 'play' ? calcScore(b).total : 0;
+          var dotCls = b.phase === 'setup' ? 'setup' : 'play', dotLabel = b.phase === 'setup' ? t('setup') : t('playing');
+          var meta = dotLabel; if (b.phase === 'play' && sc > 0) meta += ' \u00B7 ' + sc + ' ' + t('pts');
+          h += '<div class="bi' + (act ? ' active' : '') + '" data-id="' + b.id + '"><div class="bi-info"><div class="bi-name">' + esc(b.name) + '</div><div class="bi-meta"><span class="bi-dot ' + dotCls + '"></span>' + meta + '</div></div><button class="bi-del" data-id="' + b.id + '" aria-label="Delete">&times;</button></div>';
+        });
+        list.innerHTML = h;
+        list.querySelectorAll('.bi').forEach(function (el) {
+          el.addEventListener('click', function (e) {if (e.target.closest('.bi-del')) return; state.activeId = el.dataset.id; save(); closeSb(); prevBingos = null; render()});
+        });
+        list.querySelectorAll('.bi-del').forEach(function (btn) {
+          btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            openDeleteModal(btn.dataset.id); /* Triggers modal popup */
+          });
+        });
+      }
+
+      function renderMain() {
+        var b = activeBoard();
+        if (!b) {main.innerHTML = '<div class="empty"><h1>JinxO</h1><p>Create a board and fill it with words to start playing.</p><button class="btn-primary" id="empBtn">Create Board</button></div>'; document.getElementById('empBtn').onclick = createBoard; return }
+        if (b.phase === 'setup') renderSetup(b); else renderPlay(b);
+      }
+
+      /* ── Grid: rows 3→1 top→bottom, cols 1→3 left→right ── */
+      function gridCells(b, mode) {
+        var h = '', bi = mode === 'play' ? bingoInfo(b) : {rows: [], cols: [], cells: {}}, newB = [];
+        if (prevBingos !== null && mode === 'play') {for (var k in bi.cells) if (!prevBingos[k]) newB.push(k)}
+        if (mode === 'play') {prevBingos = {}; for (var k2 in bi.cells) prevBingos[k2] = 1}
+        for (var row = 3; row >= 1; row--) {
+          for (var col = 1; col <= 3; col++) {
+            var key = row + '-' + col, cls = 'cell ' + (mode === 'setup' ? 'st' : 'pl'), w, wv, ind = '';
+            if (mode === 'setup') {
+              wv = esc(gw(b, row, col));
+              h += '<div class="' + cls + '" data-k="' + key + '"><textarea class="ci" placeholder="' + t('wordPlaceholder') + '" data-r="' + row + '" data-c="' + col + '">' + wv + '</textarea></div>';
+            } else {
+              var m = gm(b, row, col);
+              if (m === 1) cls += ' c1'; else if (m === 2) cls += ' c2'; else if (m === 3) cls += ' c3';
+              if (newB.indexOf(key) !== -1) cls += ' bf';
+              w = esc(gw(b, row, col));
+              if (m === 1) ind = '<span class="cind">\u25CF</span>';
+              if (m === 2) ind = '<span class="cind">\u2605</span>';
+              if (m === 3) ind = '<span class="cind">\u2715</span>';
+              h += '<div class="' + cls + '" data-r="' + row + '" data-c="' + col + '" tabindex="0">' + ind + '<span class="cw">' + w + '</span></div>';
+            }
+          }
+        }
+        return h;
+      }
+
+      function rowLabelHtml(bi) {
+        var h = '';
+        for (var i = 3; i >= 1; i--)h += '<span' + (bi.rows.indexOf(i) !== -1 ? ' class="bingo"' : '') + '>' + i + '</span>';
+        return h;
+      }
+      function colLabelHtml(bi) {
+        var h = '';
+        for (var i = 1; i <= 3; i++)h += '<span' + (bi.cols.indexOf(i) !== -1 ? ' class="bingo"' : '') + '>' + i + '</span>';
+        return h;
+      }
+
+      /* ── Setup ── */
+      function renderSetup(b) {
+        var bi = {rows: [], cols: [], cells: {}};
+        var h = '<div class="bv">';
+        h += '<div class="bv-name">' + esc(b.name) + '</div>';
+        h += '<div class="board-section"><div class="board-grid">' + gridCells(b, 'setup') + '</div>';
+        h += '<div class="row-labels">' + rowLabelHtml(bi) + '</div>';
+        h += '<div class="col-labels">' + colLabelHtml(bi) + '</div>';
+        h += '<div class="board-footer"><div class="bv-acts"><button class="btn-full" id="startBtn">Start Game</button>';
+        h += '<p class="hint">Fill each cell with a word, then start.</p></div></div></div></div>';
+        main.innerHTML = h;
+        main.querySelectorAll('.ci').forEach(function (inp) {
+          inp.addEventListener('input', function () {
+            b.words[inp.dataset.r + '-' + inp.dataset.c] = inp.value;
+            save();
+          });
+        });
+
+        main.querySelectorAll('.cell.st').forEach(function (cell) {
+          cell.addEventListener('click', function () {
+            var textarea = cell.querySelector('.ci');
+            if (textarea && document.activeElement !== textarea) {
+              textarea.focus();
+            }
+          });
+        });
+
+        document.getElementById('startBtn').addEventListener('click', function () {
+          var hasEmpty = false;
+          for (var r = 1; r <= 3 && !hasEmpty; r++)for (var c = 1; c <= 3 && !hasEmpty; c++)if (!gw(b, r, c).trim()) hasEmpty = true;
+          if (hasEmpty) {
+            toast(t('allCells'));
+            main.querySelectorAll('.ci').forEach(function (inp) {var cell = inp.parentElement; if (!inp.value.trim()) cell.classList.add('err'); else cell.classList.remove('err')});
+            return;
+          }
+          for (var r = 1; r <= 3; r++) {
+            for (var c = 1; c <= 3; c++) {
+              b.words[r + '-' + c] = gw(b, r, c).trim();
+            }
+          }
+          b.phase = 'play'; b.marks = {}; save(); prevBingos = null; render();
+        });
+      }
+
+      /* ── Play ── */
+      function renderPlay(b) {
+        clearTimeout(lpTmr);
+        var bi = bingoInfo(b);
+        var h = '<div class="bv">';
+        h += '<div class="bv-name">' + esc(b.name) + '</div>';
+        h += '<div class="board-section"><div class="board-grid">' + gridCells(b, 'play') + '</div>';
+        h += '<div class="row-labels">' + rowLabelHtml(bi) + '</div>';
+        h += '<div class="col-labels">' + colLabelHtml(bi) + '</div>';
+        h += '<div class="board-footer">';
+        h += '<div class="leg">';
+        h += '<div class="leg-i"><div class="leg-s ls1">\u25CF</div>' + t('tapCycle') + '</div>';
+        h += '<div class="leg-i"><div class="leg-s ls3">\u2715</div>' + t('longPressX') + '</div>';
+        h += '</div>';
+        h += '<div class="sec-btns"><button class="btn-sec" id="resetBtn">' + t('reset') + '</button><button class="btn-sec" id="editBtn">' + t('editBoard') + '</button></div>';
+        h += '</div></div></div>';
+        main.innerHTML = h;
+        /* Bind cells via pointer events */
+        main.querySelectorAll('.cell.pl').forEach(function (cell) {
+          var r = +cell.dataset.r, c = +cell.dataset.c;
+          var lpActive = false, dragged = false;
+
+          function cleanup() {
+            cell.classList.remove('pressed'); /* Remove pressed visual immediately */
+            clearTimeout(lpTmr); lpTmr = null; lpActive = false;
+            document.removeEventListener('pointermove', onMove);
+            document.removeEventListener('pointerup', onUp);
+            document.removeEventListener('pointercancel', cleanup);
+          }
+
+          function onMove(e) {
+            if (!lpActive) return;
+            var rect = cell.getBoundingClientRect();
+            if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) {
+              clearTimeout(lpTmr); dragged = true; cleanup();
+            }
+          }
+
+          function onUp(e) {
+            cleanup();
+            if (dragged || lpFired) return;
+            var rect = cell.getBoundingClientRect();
+            if (!rect.width || e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) return;
+
+            /* Tap cycle: Default → Circle → Star → Default */
+            var m = gm(b, r, c);
+            if (m === 0) sm(b, r, c, 1);
+            else if (m === 1) sm(b, r, c, 2);
+            else if (m === 2) sm(b, r, c, 0);
+            else sm(b, r, c, 0);
+            afterMark(b);
+          }
+
+          cell.addEventListener('pointerdown', function (e) {
+            e.preventDefault();
+            cell.classList.add('pressed'); /* Trigger visual press down */
+            dragged = false; lpFired = false; lpActive = true;
+            var rect = cell.getBoundingClientRect();
+
+            lpTmr = setTimeout(function () {
+              lpFired = true; lpActive = false;
+              cleanup(); /* Immediately lifts the cell visual back up */
+              sm(b, r, c, 3); /* Set to X */
+              afterMark(b);
+              if (navigator.vibrate) navigator.vibrate(25);
+            }, LP);
+
+            document.addEventListener('pointermove', onMove);
+            document.addEventListener('pointerup', onUp);
+            document.addEventListener('pointercancel', cleanup);
+          });
+
+          cell.addEventListener('contextmenu', function (e) {e.preventDefault()});
+          cell.addEventListener('selectstart', function (e) {e.preventDefault()});
+        });
+        /* Bind buttons */
+        document.getElementById('resetBtn').onclick = function () {
+          openModal({
+            title: t('resetBoard'),
+            desc: t('resetDesc'),
+            buttonText: t('reset'),
+            onConfirm: function () {
+              b.marks = {};
+              save();
+              prevBingos = null;
+              render();
+            }
+          });
+        };
+        document.getElementById('editBtn').onclick = function () {
+          openModal({
+            title: t('editBoardTitle'),
+            desc: t('editDesc'),
+            buttonText: t('editBoard'),
+            onConfirm: function () {
+              b.phase = 'setup';
+              b.marks = {};
+              save();
+              prevBingos = null;
+              render();
+            }
+          });
+        };
+      }
+
+      function afterMark(b) {
+        clearTimeout(lpTmr);
+        updateHdr();
+        renderSb();   /* Re-renders sidebar to update board scores */
+        renderPlay(b);
+      }
+
+      render(); applyLanguage();
+    })();
+  </script>
+</body>
+
+</html>
