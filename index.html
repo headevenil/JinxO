@@ -1095,8 +1095,8 @@
 
       var LANG = localStorage.getItem('jinxo_lang') || (navigator.language.toLowerCase().startsWith('ko') ? 'ko' : 'en');
       var I18N = {
-        en: {new: '+ New', boards: 'Boards', newBoard: '+ New Board', noBoards: 'No boards yet', setup: 'Setup', playing: 'Playing', pts: 'pts', createBoard: 'Create Board', emptyDesc: 'Create a board and fill it with words to start playing.', wordPlaceholder: 'word', startGame: 'Start Game', fillCells: 'Fill each cell with a word, then start.', allCells: 'All cells need a word first', tapCycle: 'Tap: cycle', longPressX: 'Long-press: X', reset: 'Reset', editBoard: 'Edit Board', confirmAction: 'Confirm Action', areYouSure: 'Are you sure?', cancel: 'Cancel', confirm: 'Confirm', deleteBoard: 'Delete Board?', deleteDesc: 'This action cannot be undone.', delete: 'Delete', resetBoard: 'Reset Board?', resetDesc: 'This will clear all circles, stars, and X marks on this board.', editBoardTitle: 'Edit Board?', editDesc: 'Editing the board will reset and clear all current markings.', circled: 'Circled', starred: 'Starred', rowBingo: 'Row {n} bingo', colBingo: 'Col {n} bingo', boardDefault: 'Board {n}'},
-        ko: {new: '+ 새로 만들기', boards: '보드', newBoard: '+ 새 보드', noBoards: '아직 보드가 없습니다', setup: '설정', playing: '게임 중', pts: '점', createBoard: '보드 만들기', emptyDesc: '보드를 만들고 단어를 입력하여 게임을 시작하세요.', wordPlaceholder: '단어', startGame: '게임 시작', fillCells: '각 칸에 단어를 입력한 후 시작하세요.', allCells: '모든 칸에 단어를 입력해주세요.', tapCycle: '탭: 표시 변경', longPressX: '길게 누르기: X', reset: '초기화', editBoard: '보드 수정', confirmAction: '확인', areYouSure: '정말 진행하시겠습니까?', cancel: '취소', confirm: '확인', deleteBoard: '보드를 삭제할까요?', deleteDesc: '이 작업은 되돌릴 수 없습니다.', delete: '삭제', resetBoard: '보드를 초기화할까요?', resetDesc: '이 보드의 모든 동그라미, 별, X 표시가 삭제됩니다.', editBoardTitle: '보드를 수정할까요?', editDesc: '보드를 수정하면 현재 표시가 모두 초기화됩니다.', circled: '동그라미', starred: '별', rowBingo: '{n}행 빙고', colBingo: '{n}열 빙고', boardDefault: '보드 {n}'}
+        en: {new: '+ New', boards: 'Boards', newBoard: '+ New Board', noBoards: 'No boards yet', setup: 'Setup', playing: 'Playing', pts: 'pts', createBoard: 'Create Board', emptyDesc: 'Create a board and fill it with words to start playing.', wordPlaceholder: 'word', startGame: 'Start Game', fillCells: 'Fill each cell with a word, then start.', allCells: 'All cells need a word first', tapCycle: 'Tap: cycle', longPressX: 'Long-press: X', reset: 'Reset', editBoard: 'Edit Board', confirmAction: 'Confirm Action', areYouSure: 'Are you sure?', cancel: 'Cancel', confirm: 'Confirm', deleteBoard: 'Delete Board?', deleteDesc: 'This action cannot be undone.', delete: 'Delete', resetBoard: 'Reset Board?', resetDesc: 'This will clear all circles, stars, and X marks on this board.', editBoardTitle: 'Edit Board?', editDesc: 'Editing the board will reset and clear all current markings.', circled: 'Circled', starred: 'Starred', rowBingo: 'Row {n} bingo', colBingo: 'Col {n} bingo', boardDefault: 'Board {n}', duplicateWords: 'All words must be unique'},
+        ko: {new: '+ 새로 만들기', boards: '보드', newBoard: '+ 새 보드', noBoards: '아직 보드가 없습니다', setup: '설정', playing: '게임 중', pts: '점', createBoard: '보드 만들기', emptyDesc: '보드를 만들고 단어를 입력하여 게임을 시작하세요.', wordPlaceholder: '단어', startGame: '게임 시작', fillCells: '각 칸에 단어를 입력한 후 시작하세요.', allCells: '모든 칸에 단어를 입력해주세요.', tapCycle: '탭: 표시 변경', longPressX: '길게 누르기: X', reset: '초기화', editBoard: '보드 수정', confirmAction: '확인', areYouSure: '정말 진행하시겠습니까?', cancel: '취소', confirm: '확인', deleteBoard: '보드를 삭제할까요?', deleteDesc: '이 작업은 되돌릴 수 없습니다.', delete: '삭제', resetBoard: '보드를 초기화할까요?', resetDesc: '이 보드의 모든 동그라미, 별, X 표시가 삭제됩니다.', editBoardTitle: '보드를 수정할까요?', editDesc: '보드를 수정하면 현재 표시가 모두 초기화됩니다.', circled: '동그라미', starred: '별', rowBingo: '{n}행 빙고', colBingo: '{n}열 빙고', boardDefault: '보드 {n}', duplicateWords: '중복된 단어는 사용할 수 없습니다'}
       };
       function t(k, v) {var x = I18N[LANG][k] || I18N.en[k] || k; if (v) Object.keys(v).forEach(function (a) {x = x.replace('{' + a + '}', v[a])}); return x}
       function applyLanguage() {document.documentElement.lang = LANG; document.querySelectorAll('[data-i18n]').forEach(function (e) {e.textContent = t(e.getAttribute('data-i18n'))}); document.getElementById('langEn').classList.toggle('active', LANG === 'en'); document.getElementById('langKo').classList.toggle('active', LANG === 'ko')}
@@ -1333,19 +1333,67 @@
 
         document.getElementById('startBtn').addEventListener('click', function () {
           var hasEmpty = false;
-          for (var r = 1; r <= 3 && !hasEmpty; r++)for (var c = 1; c <= 3 && !hasEmpty; c++)if (!gw(b, r, c).trim()) hasEmpty = true;
+          for (var r = 1; r <= 3 && !hasEmpty; r++) {
+            for (var c = 1; c <= 3 && !hasEmpty; c++) {
+              if (!gw(b, r, c).trim()) hasEmpty = true;
+            }
+          }
+          
           if (hasEmpty) {
             toast(t('allCells'));
-            main.querySelectorAll('.ci').forEach(function (inp) {var cell = inp.parentElement; if (!inp.value.trim()) cell.classList.add('err'); else cell.classList.remove('err')});
+            main.querySelectorAll('.ci').forEach(function (inp) {
+              var cell = inp.parentElement; 
+              if (!inp.value.trim()) cell.classList.add('err'); 
+              else cell.classList.remove('err');
+            });
             return;
           }
+
+          // ── Duplicate Check (Fully Trimmed Inputs) ──
+          var wordsList = [];
+          for (var r = 1; r <= 3; r++) {
+            for (var c = 1; c <= 3; c++) {
+              wordsList.push({ r: r, c: c, val: gw(b, r, c).trim() });
+            }
+          }
+
+          var seenValues = {};
+          var duplicateCells = new Set();
+          wordsList.forEach(function (item) {
+            if (seenValues[item.val]) {
+              duplicateCells.add(item.r + '-' + item.c);
+              duplicateCells.add(seenValues[item.val]);
+            } else {
+              seenValues[item.val] = item.r + '-' + item.c;
+            }
+          });
+
+          if (duplicateCells.size > 0) {
+            toast(t('duplicateWords'));
+            main.querySelectorAll('.ci').forEach(function (inp) {
+              var cellKey = inp.dataset.r + '-' + inp.dataset.c;
+              if (duplicateCells.has(cellKey)) {
+                inp.parentElement.classList.add('err');
+              } else {
+                inp.parentElement.classList.remove('err');
+              }
+            });
+            return;
+          }
+          // ─────────────────────────────────────────────
+
           for (var r = 1; r <= 3; r++) {
             for (var c = 1; c <= 3; c++) {
               b.words[r + '-' + c] = gw(b, r, c).trim();
             }
           }
-          b.phase = 'play'; b.marks = {}; save(); prevBingos = null; render();
+          b.phase = 'play'; 
+          b.marks = {}; 
+          save(); 
+          prevBingos = null; 
+          render();
         });
+
       }
 
       /* ── Play ── */
