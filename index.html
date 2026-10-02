@@ -3,8 +3,18 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no,viewport-fit=cover">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
   <title>JinxO</title>
+  <meta name="description" content="JinxO — a 3×3 word bingo board you fill, mark and score right in your browser.">
+  <meta name="theme-color" content="#3D3229">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="JinxO">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta property="og:title" content="JinxO">
+  <meta property="og:description" content="A 3×3 word bingo board you fill, mark and score right in your browser.">
+  <link rel="icon"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%233D3229'/%3E%3Cg fill='%23CDC1B4'%3E%3Crect x='10' y='10' width='12' height='12' rx='3'/%3E%3Crect x='26' y='10' width='12' height='12' rx='3'/%3E%3Crect x='42' y='10' width='12' height='12' rx='3'/%3E%3Crect x='10' y='26' width='12' height='12' rx='3'/%3E%3Crect x='42' y='26' width='12' height='12' rx='3'/%3E%3Crect x='10' y='42' width='12' height='12' rx='3'/%3E%3Crect x='26' y='42' width='12' height='12' rx='3'/%3E%3Crect x='42' y='42' width='12' height='12' rx='3'/%3E%3C/g%3E%3Crect x='26' y='26' width='12' height='12' rx='3' fill='%23E8A838'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -62,7 +72,10 @@
       display: flex;
       flex-direction: column;
       -webkit-font-smoothing: antialiased;
-      -webkit-tap-highlight-color: transparent
+      -webkit-tap-highlight-color: transparent;
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+      touch-action: manipulation
     }
 
     /* ── Header ── */
@@ -378,13 +391,23 @@
     /* ── Main (2048-style centering) ── */
     .main {
       flex: 1;
+      min-height: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
       padding: 16px;
+      padding-left: max(16px, env(safe-area-inset-left, 0));
+      padding-right: max(16px, env(safe-area-inset-right, 0));
       padding-bottom: max(16px, env(safe-area-inset-bottom, 0));
-      overflow: hidden
+      overflow-x: hidden;
+      overflow-y: auto;
+      overscroll-behavior: contain
+    }
+
+    /* auto margins center vertically but never push content above the scroll origin */
+    .main>* {
+      margin-top: auto;
+      margin-bottom: auto
     }
 
     /* ── Empty State ── */
@@ -433,11 +456,18 @@
 
     /* ── Board View ── */
     .bv {
-      width: 100%;
+      --fit: max(360px, calc(100vh - 200px));
+      width: min(100%, var(--fit));
       max-width: 420px;
       display: flex;
       flex-direction: column;
       align-items: center
+    }
+
+    @supports (height: 100dvh) {
+      .bv {
+        --fit: max(360px, calc(100dvh - 200px))
+      }
     }
 
     .bv-name {
@@ -533,9 +563,10 @@
       justify-content: center;
       position: relative;
       border-radius: var(--r-sm);
-      min-height: 100px;
+      aspect-ratio: 1;
+      min-width: 0;
       padding: 10px;
-      transition: background-color .12s;
+      transition: background-color .12s, transform .12s;
       user-select: none;
       overflow: hidden
     }
@@ -603,6 +634,7 @@
       text-align: center;
       line-height: 1.25;
       word-break: break-word;
+      hyphens: auto;
       white-space: pre-wrap;
       transition: color .12s;
     }
@@ -655,22 +687,6 @@
       color: var(--x-c)
     }
 
-    .cell.bf {
-      animation: bf .4s ease
-    }
-
-    @keyframes bf {
-
-      0%,
-      100% {
-        box-shadow: none
-      }
-
-      50% {
-        box-shadow: 0 0 0 3px rgba(91, 168, 124, .4)
-      }
-    }
-
     /* ── Actions ── */
     .board-footer {
       grid-column: 1;
@@ -679,7 +695,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      min-height: 85px; 
+      min-height: 85px
     }
 
     .bv-acts {
@@ -805,7 +821,9 @@
       z-index: 60;
       transition: transform .25s cubic-bezier(.4, 0, .2, 1);
       pointer-events: none;
-      white-space: nowrap;
+      width: max-content;
+      max-width: calc(100vw - 32px);
+      text-align: center;
       box-shadow: var(--shadow)
     }
 
@@ -841,10 +859,6 @@
 
     /* ── Responsive ── */
     @media(max-width:400px) {
-      .cell {
-        min-height: 90px
-      }
-
       .cw {
         font-size: 13px
       }
@@ -864,10 +878,6 @@
     }
 
     @media(max-width:340px) {
-      .cell {
-        min-height: 80px
-      }
-
       .bv {
         max-width: 320px
       }
@@ -878,10 +888,6 @@
     }
 
     @media(min-width:500px) {
-      .cell {
-        min-height: 130px
-      }
-
       .cw {
         font-size: 16px
       }
@@ -905,13 +911,14 @@
       }
 
       .board-section {
-        grid-template-columns: 1fr 28px
+        grid-template-columns: 1fr 28px;
+        padding-left: 28px /* balances the row labels so the grid sits on the page's center line */
       }
     }
 
     @media(min-width:768px) {
       .cell {
-        min-height: 160px
+        aspect-ratio: 9 / 8
       }
 
       .cw {
@@ -928,7 +935,8 @@
       }
 
       .board-section {
-        grid-template-columns: 1fr 32px
+        grid-template-columns: 1fr 32px;
+        padding-left: 32px
       }
 
       .row-labels span,
@@ -1040,13 +1048,166 @@
     .btn-danger:active {
       transform: scale(.97)
     }
+
+    /* ── Polish ── */
+    .score-pill {
+      border: none;
+      font-family: var(--font-b);
+      cursor: pointer;
+      transition: background .15s
+    }
+
+    .score-pill:hover {
+      background: rgba(255, 255, 255, .2)
+    }
+
+    .score-pill.bump .score-num {
+      animation: bump .35s cubic-bezier(.3, 1.6, .5, 1)
+    }
+
+    @keyframes bump {
+      40% {
+        transform: scale(1.3)
+      }
+    }
+
+    /* long single words shrink instead of breaking mid-word */
+    .cell .lw {
+      font-size: .82em
+    }
+
+    .cell .lw2 {
+      font-size: .68em
+    }
+
+    .cell.pop .cind {
+      animation: pop .28s cubic-bezier(.3, 1.6, .5, 1)
+    }
+
+    @keyframes pop {
+      from {
+        transform: scale(0)
+      }
+    }
+
+    .cell.bf {
+      animation: bf .6s ease
+    }
+
+    @keyframes bf {
+      0%,
+      100% {
+        box-shadow: none;
+        transform: none
+      }
+
+      40% {
+        box-shadow: 0 0 0 3px rgba(91, 168, 124, .55);
+        transform: scale(1.04)
+      }
+    }
+
+    .bv-name {
+      display: block;
+      max-width: 100%;
+      margin-left: auto;
+      margin-right: auto;
+      padding: 2px 10px;
+      background: none;
+      border: none;
+      border-radius: var(--r-sm);
+      font-family: var(--font-b);
+      line-height: 1.3;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      cursor: text;
+      transition: background .15s
+    }
+
+    .bv-name:hover {
+      background: var(--surface-2)
+    }
+
+    input.bv-name {
+      width: 100%;
+      text-align: center;
+      outline: none;
+      background: var(--surface);
+      box-shadow: 0 0 0 2px var(--accent)
+    }
+
+    .bi:focus-visible,
+    .bi-del:focus-visible,
+    .lang-switch button:focus-visible,
+    .sb-new:focus-visible,
+    .bv-name:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px
+    }
+
+    .score-pill:focus-visible {
+      outline: 2px solid #fff;
+      outline-offset: 2px
+    }
+
+    .bi-del:focus-visible {
+      opacity: 1
+    }
+
+    .lang-switch button {
+      transition: background .15s, border-color .15s
+    }
+
+    .lang-switch button:hover {
+      background: var(--surface-2)
+    }
+
+    .cm-desc {
+      white-space: pre-line;
+      line-height: 1.5
+    }
+
+    .cm-card.info .cm-desc {
+      text-align: left
+    }
+
+    .cm-card.info #cmCancel {
+      display: none
+    }
+
+    .cm-card.info #cmConfirm {
+      background: var(--accent)
+    }
+
+    .cm-card.info #cmConfirm:hover {
+      background: var(--accent-h)
+    }
+
+    /* Cell text tracks the board's actual size, not just the viewport breakpoint */
+    @supports (container-type: inline-size) {
+      .board-grid {
+        container-type: inline-size
+      }
+
+      .cw,
+      .ci {
+        font-size: clamp(12px, 2.4cqi + 6px, 18px)
+      }
+    }
+
+    .leg-arrow {
+      color: var(--text-3);
+      font-size: 10px;
+      margin: 0 -2px
+    }
   </style>
 </head>
 
 <body>
 
   <header class="header">
-    <button class="menu-btn" id="menuBtn" aria-label="Menu">
+    <button class="menu-btn" id="menuBtn" aria-label="Menu" aria-controls="sidebar" aria-expanded="false">
       <svg viewBox="0 0 20 20">
         <line x1="3" y1="5" x2="17" y2="5" />
         <line x1="3" y1="10" x2="17" y2="10" />
@@ -1055,18 +1216,18 @@
     </button>
     <div class="logo">JinxO</div>
     <div class="hdr-spacer"></div>
-    <div class="score-pill" id="scorePill">
+    <button type="button" class="score-pill" id="scorePill">
       <span class="score-num" id="scoreNum">0</span>
       <span class="score-lbl" data-i18n="pts">pts</span>
-    </div>
+    </button>
     <button class="btn-new" id="newBtn" data-i18n="new">+ New</button>
   </header>
 
   <div class="overlay" id="overlay"></div>
 
-  <aside class="sidebar" id="sidebar">
+  <aside class="sidebar" id="sidebar" inert>
     <div class="sb-head"><span class="sb-title" data-i18n="boards">Boards</span><button class="sb-close"
-        id="closeBtn">&times;</button></div>
+        id="closeBtn" aria-label="Close">&times;</button></div>
     <div class="sb-body" id="boardList"></div>
     <div class="sb-foot"><button class="sb-new" id="sbNewBtn" data-i18n="newBoard">+ New Board</button>
       <div class="lang-switch"><button type="button" id="langEn">English</button><button type="button"
@@ -1076,10 +1237,10 @@
 
   <main class="main" id="main"></main>
 
-  <div class="toast" id="toast"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <div class="confirm-modal" id="confirmModal">
-    <div class="cm-card">
+    <div class="cm-card" role="dialog" aria-modal="true" aria-labelledby="cmTitle" aria-describedby="cmDesc">
       <div class="cm-title" id="cmTitle" data-i18n="confirmAction">Confirm Action</div>
       <div class="cm-desc" id="cmDesc" data-i18n="areYouSure">Are you sure?</div>
       <div class="cm-btns">
@@ -1093,26 +1254,30 @@
     (function () {
       'use strict';
 
-      var LANG = localStorage.getItem('jinxo_lang') || (navigator.language.toLowerCase().startsWith('ko') ? 'ko' : 'en');
+      function lsGet(k) {try {return localStorage.getItem(k)} catch (e) {return null} }
+      function lsSet(k, v) {try {localStorage.setItem(k, v)} catch (e) { } }
+      var LANG = lsGet('jinxo_lang') || ((navigator.language || '').toLowerCase().indexOf('ko') === 0 ? 'ko' : 'en');
       var I18N = {
-        en: {new: '+ New', boards: 'Boards', newBoard: '+ New Board', noBoards: 'No boards yet', setup: 'Setup', playing: 'Playing', pts: 'pts', createBoard: 'Create Board', emptyDesc: 'Create a board and fill it with words to start playing.', wordPlaceholder: 'word', startGame: 'Start Game', fillCells: 'Fill each cell with a word, then start.', allCells: 'All cells need a word first', tapCycle: 'Tap: cycle', longPressX: 'Long-press: X', reset: 'Reset', editBoard: 'Edit Board', confirmAction: 'Confirm Action', areYouSure: 'Are you sure?', cancel: 'Cancel', confirm: 'Confirm', deleteBoard: 'Delete Board?', deleteDesc: 'This action cannot be undone.', delete: 'Delete', resetBoard: 'Reset Board?', resetDesc: 'This will clear all circles, stars, and X marks on this board.', editBoardTitle: 'Edit Board?', editDesc: 'Editing the board will reset and clear all current markings.', circled: 'Circled', starred: 'Starred', rowBingo: 'Row {n} bingo', colBingo: 'Col {n} bingo', boardDefault: 'Board {n}', duplicateWords: 'All words must be unique'},
-        ko: {new: '+ 새로 만들기', boards: '보드', newBoard: '+ 새 보드', noBoards: '아직 보드가 없습니다', setup: '설정', playing: '게임 중', pts: '점', createBoard: '보드 만들기', emptyDesc: '보드를 만들고 단어를 입력하여 게임을 시작하세요.', wordPlaceholder: '단어', startGame: '게임 시작', fillCells: '각 칸에 단어를 입력한 후 시작하세요.', allCells: '모든 칸에 단어를 입력해주세요.', tapCycle: '탭: 표시 변경', longPressX: '길게 누르기: X', reset: '초기화', editBoard: '보드 수정', confirmAction: '확인', areYouSure: '정말 진행하시겠습니까?', cancel: '취소', confirm: '확인', deleteBoard: '보드를 삭제할까요?', deleteDesc: '이 작업은 되돌릴 수 없습니다.', delete: '삭제', resetBoard: '보드를 초기화할까요?', resetDesc: '이 보드의 모든 동그라미, 별, X 표시가 삭제됩니다.', editBoardTitle: '보드를 수정할까요?', editDesc: '보드를 수정하면 현재 표시가 모두 초기화됩니다.', circled: '동그라미', starred: '별', rowBingo: '{n}행 빙고', colBingo: '{n}열 빙고', boardDefault: '보드 {n}', duplicateWords: '중복된 단어는 사용할 수 없습니다'}
+        en: {new: '+ New', boards: 'Boards', newBoard: '+ New Board', noBoards: 'No boards yet', setup: 'Setup', playing: 'Playing', pts: 'pts', createBoard: 'Create Board', emptyDesc: 'Create a board and fill it with words to start playing.', wordPlaceholder: 'word', startGame: 'Start Game', fillCells: 'Fill each cell with a word, then start.', allCells: 'All cells need a word first', tapCycle: 'Tap: cycle', longPressX: 'Long-press: X', reset: 'Reset', editBoard: 'Edit Board', confirmAction: 'Confirm Action', areYouSure: 'Are you sure?', cancel: 'Cancel', confirm: 'Confirm', deleteBoard: 'Delete Board?', deleteDesc: 'This action cannot be undone.', delete: 'Delete', resetBoard: 'Reset Board?', resetDesc: 'This will clear all circles, stars, and X marks on this board.', editBoardTitle: 'Edit Board?', editDesc: 'Editing the board will reset and clear all current markings.', circled: 'Circles', starred: 'Star circles', rowBingo: 'Row {n} bingo', colBingo: 'Col {n} bingo', boardDefault: 'Board {n}', duplicateWords: 'All words must be unique', menu: 'Menu', close: 'Close', ok: 'OK', longPressXMouse: 'Long-press or right-click: X', scoreTitle: 'Score: {n}', noPoints: 'No points yet — tap a word to circle it.', scoreRules: '● Circle +1 · ★ Star (a special circle) +3\nA full row or column of circles — stars included — adds its number', bingoToast: '{line}! +{n}', renameBoard: 'Rename board'},
+        ko: {new: '+ 새로 만들기', boards: '보드', newBoard: '+ 새 보드', noBoards: '아직 보드가 없습니다', setup: '설정', playing: '게임 중', pts: '점', createBoard: '보드 만들기', emptyDesc: '보드를 만들고 단어를 입력하여 게임을 시작하세요.', wordPlaceholder: '단어', startGame: '게임 시작', fillCells: '각 칸에 단어를 입력한 후 시작하세요.', allCells: '모든 칸에 단어를 입력해주세요.', tapCycle: '탭: 표시 변경', longPressX: '길게 누르기: X', reset: '초기화', editBoard: '보드 수정', confirmAction: '확인', areYouSure: '정말 진행하시겠습니까?', cancel: '취소', confirm: '확인', deleteBoard: '보드를 삭제할까요?', deleteDesc: '이 작업은 되돌릴 수 없습니다.', delete: '삭제', resetBoard: '보드를 초기화할까요?', resetDesc: '이 보드의 모든 동그라미, 별, X 표시가 삭제됩니다.', editBoardTitle: '보드를 수정할까요?', editDesc: '보드를 수정하면 현재 표시가 모두 초기화됩니다.', circled: '동그라미', starred: '별 동그라미', rowBingo: '{n}행 빙고', colBingo: '{n}열 빙고', boardDefault: '보드 {n}', duplicateWords: '중복된 단어는 사용할 수 없습니다', menu: '메뉴', close: '닫기', ok: '확인', longPressXMouse: '길게 누르기 또는 우클릭: X', scoreTitle: '점수: {n}', noPoints: '아직 점수가 없습니다. 단어를 탭해 동그라미를 표시하세요.', scoreRules: '● 동그라미 +1 · ★ 별(특별한 동그라미) +3\n별을 포함해 한 줄이 모두 동그라미면 줄 번호만큼 +', bingoToast: '{line}! +{n}', renameBoard: '보드 이름 변경'}
       };
       function t(k, v) {var x = I18N[LANG][k] || I18N.en[k] || k; if (v) Object.keys(v).forEach(function (a) {x = x.replace('{' + a + '}', v[a])}); return x}
-      function applyLanguage() {document.documentElement.lang = LANG; document.querySelectorAll('[data-i18n]').forEach(function (e) {e.textContent = t(e.getAttribute('data-i18n'))}); document.getElementById('langEn').classList.toggle('active', LANG === 'en'); document.getElementById('langKo').classList.toggle('active', LANG === 'ko')}
-      function setLanguage(l) {LANG = l; localStorage.setItem('jinxo_lang', l); render(); applyLanguage()}
+      function applyLanguage() {document.documentElement.lang = LANG; document.querySelectorAll('[data-i18n]').forEach(function (e) {e.textContent = t(e.getAttribute('data-i18n'))}); document.getElementById('langEn').classList.toggle('active', LANG === 'en'); document.getElementById('langKo').classList.toggle('active', LANG === 'ko'); document.getElementById('menuBtn').setAttribute('aria-label', t('menu')); document.getElementById('closeBtn').setAttribute('aria-label', t('close'))}
+      function setLanguage(l) {LANG = l; lsSet('jinxo_lang', l); render(); applyLanguage()}
 
 
       var KEY = 'jinxo_nks', LP = 450, state = load(),
-        lpTmr = null, lpFired = false, prevBingos = null;
+        lpTmr = null, lpFired = false, prevBingos = null,
+        popKey = null, lastPointer = 'mouse', focusSetup = false, lastScore = null,
+        finePointer = window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches;
 
       /* ── Persistence ── */
       function load() {
-        try {var d = JSON.parse(localStorage.getItem(KEY)); if (d && d.boards) return d} catch (e) { }
-        try {var d2 = JSON.parse(localStorage.getItem('jinxo_v2')); if (d2 && d2.boards) {localStorage.setItem(KEY, JSON.stringify(d2)); return d2} } catch (e) { }
+        try {var d = JSON.parse(lsGet(KEY)); if (d && d.boards) return d} catch (e) { }
+        try {var d2 = JSON.parse(lsGet('jinxo_v2')); if (d2 && d2.boards) {lsSet(KEY, JSON.stringify(d2)); return d2} } catch (e) { }
         return {boards: [], activeId: null}
       }
-      function save() {localStorage.setItem(KEY, JSON.stringify(state))}
+      function save() {lsSet(KEY, JSON.stringify(state))}
       function uid() {return Date.now().toString(36) + Math.random().toString(36).slice(2, 7)}
       function esc(s) {var d = document.createElement('div'); d.textContent = s; return d.innerHTML}
       function aesc(s) {return s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}
@@ -1124,7 +1289,7 @@
       function createBoard() {
         var b = {id: uid(), name: t('boardDefault', {n: nextNum()}), phase: 'setup', words: {}, marks: {}};
         for (var r = 1; r <= 3; r++)for (var c = 1; c <= 3; c++)b.words[r + '-' + c] = '';
-        state.boards.push(b); state.activeId = b.id; save(); closeSb(); prevBingos = null; render();
+        state.boards.push(b); state.activeId = b.id; save(); closeSb(); prevBingos = null; focusSetup = true; render();
       }
       function gm(b, r, c) {return b.marks[r + '-' + c] || 0}
       function sm(b, r, c, v) {if (v === 0) delete b.marks[r + '-' + c]; else b.marks[r + '-' + c] = v; save()}
@@ -1146,20 +1311,42 @@
         cmCancel = document.getElementById('cmCancel'),
         cmConfirm = document.getElementById('cmConfirm');
 
+      var modalReturn = null;
+      function modalOpen() {return confirmModal.classList.contains('open')}
+
       function openModal(options) {
         cmTitle.textContent = options.title;
         cmDesc.textContent = options.desc;
-        cmConfirm.textContent = options.buttonText || 'Confirm';
-        pendingAction = options.onConfirm;
+        cmConfirm.textContent = options.buttonText || t('confirm');
+        cmCancel.textContent = t('cancel');
+        cmTitle.parentElement.classList.toggle('info', !!options.info);
+        pendingAction = options.onConfirm || null;
+        modalReturn = document.activeElement;
         confirmModal.classList.add('open');
+        /* Destructive prompts land on Cancel; info sheets on OK */
+        (options.info ? cmConfirm : cmCancel).focus();
       }
 
       function closeModal() {
         pendingAction = null;
         confirmModal.classList.remove('open');
+        if (modalReturn && document.contains(modalReturn)) modalReturn.focus();
+        modalReturn = null;
       }
 
       cmCancel.onclick = closeModal;
+      confirmModal.addEventListener('click', function (e) {if (e.target === confirmModal) closeModal()});
+      confirmModal.addEventListener('keydown', function (e) {
+        if (e.key !== 'Tab') return;
+        var btns = [cmCancel, cmConfirm].filter(function (x) {return x.offsetParent !== null});
+        var i = btns.indexOf(document.activeElement);
+        e.preventDefault();
+        btns[(i + (e.shiftKey ? btns.length - 1 : 1)) % btns.length].focus();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        if (modalOpen()) closeModal(); else if (sidebar.classList.contains('open')) closeSb();
+      });
       cmConfirm.onclick = function () {
         if (pendingAction) pendingAction();
         closeModal();
@@ -1209,9 +1396,17 @@
 
       /* ── Sidebar ── */
       var sidebar = document.getElementById('sidebar'), overlayEl = document.getElementById('overlay');
-      function openSb() {sidebar.classList.add('open'); overlayEl.classList.add('open')}
-      function closeSb() {sidebar.classList.remove('open'); overlayEl.classList.remove('open')}
-      document.getElementById('menuBtn').onclick = openSb;
+      var menuBtn = document.getElementById('menuBtn');
+      function openSb() {
+        sidebar.inert = false; sidebar.classList.add('open'); overlayEl.classList.add('open'); menuBtn.setAttribute('aria-expanded', 'true');
+        (sidebar.querySelector('.bi.active') || document.getElementById('closeBtn')).focus();
+      }
+      function closeSb() {
+        var had = sidebar.contains(document.activeElement);
+        sidebar.classList.remove('open'); overlayEl.classList.remove('open'); menuBtn.setAttribute('aria-expanded', 'false'); sidebar.inert = true;
+        if (had) menuBtn.focus();
+      }
+      menuBtn.onclick = openSb;
       document.getElementById('closeBtn').onclick = closeSb;
       overlayEl.onclick = closeSb;
       document.getElementById('newBtn').onclick = createBoard;
@@ -1230,9 +1425,30 @@
 
       function updateHdr() {
         var b = activeBoard();
-        if (b && b.phase === 'play') {scorePill.classList.add('vis'); scoreNum.textContent = calcScore(b).total}
-        else {scorePill.classList.remove('vis')}
+        document.title = b ? getBoardName(b) + ' \u00B7 JinxO' : 'JinxO';
+        if (b && b.phase === 'play') {
+          var total = calcScore(b).total, key = b.id + ':' + total;
+          scorePill.classList.add('vis'); scoreNum.textContent = total;
+          scorePill.setAttribute('aria-label', t('scoreTitle', {n: total}));
+          if (lastScore && lastScore !== key && lastScore.split(':')[0] === b.id) {
+            scorePill.classList.remove('bump'); void scorePill.offsetWidth; scorePill.classList.add('bump');
+          }
+          lastScore = key;
+        }
+        else {scorePill.classList.remove('vis'); lastScore = null}
       }
+
+      /* Score breakdown — calcScore already itemizes, this just surfaces it */
+      scorePill.onclick = function () {
+        var b = activeBoard(); if (!b) return;
+        var sc = calcScore(b), lines = sc.details.map(function (d) {return d.l + '  +' + d.v});
+        openModal({
+          info: true,
+          title: t('scoreTitle', {n: sc.total}),
+          desc: (lines.length ? lines.join('\n') : t('noPoints')) + '\n\n' + t('scoreRules'),
+          buttonText: t('ok')
+        });
+      };
 
       function renderSb() {
         var list = document.getElementById('boardList');
@@ -1242,11 +1458,12 @@
           var act = b.id === state.activeId, sc = b.phase === 'play' ? calcScore(b).total : 0;
           var dotCls = b.phase === 'setup' ? 'setup' : 'play', dotLabel = b.phase === 'setup' ? t('setup') : t('playing');
           var meta = dotLabel; if (b.phase === 'play' && sc > 0) meta += ' \u00B7 ' + sc + ' ' + t('pts');
-          h += '<div class="bi' + (act ? ' active' : '') + '" data-id="' + b.id + '"><div class="bi-info"><div class="bi-name">' + esc(getBoardName(b)) + '</div><div class="bi-meta"><span class="bi-dot ' + dotCls + '"></span>' + meta + '</div></div><button class="bi-del" data-id="' + b.id + '" aria-label="Delete">&times;</button></div>';
+          h += '<div class="bi' + (act ? ' active' : '') + '" data-id="' + b.id + '" role="button" tabindex="0"' + (act ? ' aria-current="true"' : '') + '><div class="bi-info"><div class="bi-name">' + esc(getBoardName(b)) + '</div><div class="bi-meta"><span class="bi-dot ' + dotCls + '"></span>' + meta + '</div></div><button class="bi-del" data-id="' + b.id + '" aria-label="' + aesc(t('delete')) + '">&times;</button></div>';
         });
         list.innerHTML = h;
         list.querySelectorAll('.bi').forEach(function (el) {
           el.addEventListener('click', function (e) {if (e.target.closest('.bi-del')) return; state.activeId = el.dataset.id; save(); closeSb(); prevBingos = null; render()});
+          el.addEventListener('keydown', function (e) {if (e.target === el && (e.key === 'Enter' || e.key === ' ')) {e.preventDefault(); el.click()} });
         });
         list.querySelectorAll('.bi-del').forEach(function (btn) {
           btn.addEventListener('click', function (e) {
@@ -1281,15 +1498,49 @@
               var m = gm(b, row, col);
               if (m === 1) cls += ' c1'; else if (m === 2) cls += ' c2'; else if (m === 3) cls += ' c3';
               if (newB.indexOf(key) !== -1) cls += ' bf';
+              if (key === popKey) cls += ' pop';
               w = esc(gw(b, row, col));
               if (m === 1) ind = '<span class="cind">\u25CF</span>';
               if (m === 2) ind = '<span class="cind">\u2605</span>';
               if (m === 3) ind = '<span class="cind">\u2715</span>';
-              h += '<div class="' + cls + '" data-r="' + row + '" data-c="' + col + '" tabindex="0">' + ind + '<span class="cw">' + w + '</span></div>';
+              h += '<div class="' + cls + '" data-r="' + row + '" data-c="' + col + '" tabindex="0">' + ind + '<span class="cw' + fitCls(gw(b, row, col)) + '">' + w + '</span></div>';
             }
           }
         }
         return h;
+      }
+
+      /* Longest unbroken run, Hangul/CJK weighted ~2x latin */
+      function fitCls(w) {
+        var n = 0;
+        w.split(/\s+/).forEach(function (s) {var l = 0; for (var i = 0; i < s.length; i++) l += s.charCodeAt(i) > 0x2E7F ? 1.8 : 1; if (l > n) n = l});
+        return n > 16 ? ' lw2' : n > 11 ? ' lw' : '';
+      }
+
+      function nameHtml(b) {
+        return '<button type="button" class="bv-name" id="bvName" title="' + aesc(t('renameBoard')) + '">' + esc(getBoardName(b)) + '</button>';
+      }
+
+      function bindRename(b) {
+        var btn = document.getElementById('bvName');
+        btn.onclick = function () {
+          var inp = document.createElement('input'), done = false;
+          inp.className = 'bv-name'; inp.maxLength = 40; inp.value = getBoardName(b);
+          inp.setAttribute('aria-label', t('renameBoard'));
+          btn.replaceWith(inp); inp.focus(); inp.select();
+          function finish(keep) {
+            if (done) return; done = true;
+            var v = inp.value.trim();
+            if (keep && v && v !== getBoardName(b)) {b.name = v; save()}
+            render();
+            var nb = document.getElementById('bvName'); if (nb) nb.focus();
+          }
+          inp.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.isComposing) {e.preventDefault(); finish(true)}
+            else if (e.key === 'Escape') {e.preventDefault(); e.stopPropagation(); finish(false)}
+          });
+          inp.addEventListener('blur', function () {finish(true)});
+        };
       }
 
       function rowLabelHtml(bi) {
@@ -1308,19 +1559,33 @@
         var bi = {rows: [], cols: [], cells: {}};
         var h = '<div class="bv">';
         h += '<div class="board-section">';
-        h += '<div class="bv-name">' + esc(getBoardName(b)) + '</div>';
+        h += nameHtml(b);
         h += '<div class="board-grid">' + gridCells(b, 'setup') + '</div>';
         h += '<div class="row-labels">' + rowLabelHtml(bi) + '</div>';
         h += '<div class="col-labels">' + colLabelHtml(bi) + '</div>';
         h += '<div class="board-footer"><div class="bv-acts"><button class="btn-full" id="startBtn">' + t('startGame') + '</button>';
         h += '<p class="hint">' + t('fillCells') + '</p></div></div></div></div>';
         main.innerHTML = h;
-        main.querySelectorAll('.ci').forEach(function (inp) {
+        bindRename(b);
+        var inputs = main.querySelectorAll('.ci');
+        inputs.forEach(function (inp, i) {
           inp.addEventListener('input', function () {
             b.words[inp.dataset.r + '-' + inp.dataset.c] = inp.value;
+            inp.parentElement.classList.remove('err');
             save();
           });
+          /* Enter moves on (Shift+Enter still breaks the line); the last cell hands off to Start */
+          inp.addEventListener('keydown', function (e) {
+            if (e.key !== 'Enter' || e.shiftKey || e.isComposing || e.keyCode === 229) return;
+            e.preventDefault();
+            (inputs[i + 1] || document.getElementById('startBtn')).focus();
+          });
         });
+        if (focusSetup && finePointer) {
+          var firstEmpty = Array.prototype.find.call(inputs, function (x) {return !x.value.trim()});
+          if (firstEmpty) firstEmpty.focus();
+        }
+        focusSetup = false;
 
         main.querySelectorAll('.cell.st').forEach(function (cell) {
           cell.addEventListener('click', function () {
@@ -1357,14 +1622,15 @@
             }
           }
 
-          var seenValues = {};
+          var seenValues = Object.create(null); /* plain {} would flag words like "constructor" */
           var duplicateCells = new Set();
           wordsList.forEach(function (item) {
-            if (seenValues[item.val]) {
+            var norm = item.val.toLowerCase().replace(/\s+/g, ' ');
+            if (seenValues[norm]) {
               duplicateCells.add(item.r + '-' + item.c);
-              duplicateCells.add(seenValues[item.val]);
+              duplicateCells.add(seenValues[norm]);
             } else {
-              seenValues[item.val] = item.r + '-' + item.c;
+              seenValues[norm] = item.r + '-' + item.c;
             }
           });
 
@@ -1399,23 +1665,27 @@
       /* ── Play ── */
       function renderPlay(b) {
         clearTimeout(lpTmr);
+        var ae = document.activeElement, refocus = ae && main.contains(ae) && ae.classList.contains('pl') ? ae.dataset.r + '-' + ae.dataset.c : null;
         var bi = bingoInfo(b);
         var h = '<div class="bv">';
         h += '<div class="board-section">';
-        h += '<div class="bv-name">' + esc(getBoardName(b)) + '</div>';
+        h += nameHtml(b);
         h += '<div class="board-grid">' + gridCells(b, 'play') + '</div>';
         h += '<div class="row-labels">' + rowLabelHtml(bi) + '</div>';
         h += '<div class="col-labels">' + colLabelHtml(bi) + '</div>';
         h += '<div class="board-footer">';
         h += '<div class="leg">';
-        h += '<div class="leg-i"><div class="leg-s ls1">\u25CF</div>' + t('tapCycle') + '</div>';
-        h += '<div class="leg-i"><div class="leg-s ls3">\u2715</div>' + t('longPressX') + '</div>';
+        h += '<div class="leg-i"><div class="leg-s ls1">\u25CF</div><span class="leg-arrow">\u2192</span><div class="leg-s ls2">\u2605</div>' + t('tapCycle') + '</div>';
+        h += '<div class="leg-i"><div class="leg-s ls3">\u2715</div>' + t(finePointer ? 'longPressXMouse' : 'longPressX') + '</div>';
         h += '</div>';
         h += '<div class="sec-btns"><button class="btn-sec" id="resetBtn">' + t('reset') + '</button><button class="btn-sec" id="editBtn">' + t('editBoard') + '</button></div>';
         h += '</div></div></div>';
         main.innerHTML = h;
+        popKey = null;
+        bindRename(b);
+        var cells = main.querySelectorAll('.cell.pl');
         /* Bind cells via pointer events */
-        main.querySelectorAll('.cell.pl').forEach(function (cell) {
+        cells.forEach(function (cell, idx) {
           var r = +cell.dataset.r, c = +cell.dataset.c;
           var lpActive = false, dragged = false;
 
@@ -1441,17 +1711,13 @@
             var rect = cell.getBoundingClientRect();
             if (!rect.width || e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) return;
 
-            /* Tap cycle: Default → Circle → Star → Default */
-            var m = gm(b, r, c);
-            if (m === 0) sm(b, r, c, 1);
-            else if (m === 1) sm(b, r, c, 2);
-            else if (m === 2) sm(b, r, c, 0);
-            else sm(b, r, c, 0);
-            afterMark(b);
+            mark(b, r, c, nextMark(gm(b, r, c)));
           }
 
           cell.addEventListener('pointerdown', function (e) {
             e.preventDefault();
+            lastPointer = e.pointerType;
+            if (e.button !== 0) return; /* right-click is handled by contextmenu */
             cell.classList.add('pressed'); /* Trigger visual press down */
             dragged = false; lpFired = false; lpActive = true;
             var rect = cell.getBoundingClientRect();
@@ -1459,9 +1725,8 @@
             lpTmr = setTimeout(function () {
               lpFired = true; lpActive = false;
               cleanup(); /* Immediately lifts the cell visual back up */
-              sm(b, r, c, 3); /* Set to X */
-              afterMark(b);
               if (navigator.vibrate) navigator.vibrate(25);
+              mark(b, r, c, 3); /* Set to X */
             }, LP);
 
             document.addEventListener('pointermove', onMove);
@@ -1469,9 +1734,27 @@
             document.addEventListener('pointercancel', cleanup);
           });
 
-          cell.addEventListener('contextmenu', function (e) {e.preventDefault()});
+          cell.addEventListener('contextmenu', function (e) {
+            e.preventDefault();
+            if (lastPointer === 'mouse') mark(b, r, c, 3); /* desktop right-click = X; touch long-press has its own timer */
+          });
+
+          cell.addEventListener('keydown', function (e) {
+            var m = gm(b, r, c), k = e.key, to = null;
+            if (k === 'Enter' || k === ' ') mark(b, r, c, nextMark(m));
+            else if (k === 'x' || k === 'X') mark(b, r, c, m === 3 ? 0 : 3);
+            else if (k === 'Backspace' || k === 'Delete') {if (m) mark(b, r, c, 0)}
+            else if (k === 'ArrowLeft' && idx % 3) to = idx - 1;
+            else if (k === 'ArrowRight' && idx % 3 < 2) to = idx + 1;
+            else if (k === 'ArrowUp' && idx > 2) to = idx - 3;
+            else if (k === 'ArrowDown' && idx < 6) to = idx + 3;
+            else return;
+            e.preventDefault();
+            if (to !== null) cells[to].focus();
+          });
           cell.addEventListener('selectstart', function (e) {e.preventDefault()});
         });
+        if (refocus) {var rf = main.querySelector('.cell.pl[data-r="' + refocus[0] + '"][data-c="' + refocus[2] + '"]'); if (rf) rf.focus()}
         /* Bind buttons */
         document.getElementById('resetBtn').onclick = function () {
           openModal({
@@ -1502,12 +1785,32 @@
         };
       }
 
+      /* Tap cycle: Default → Circle → Star → Default (X also clears) */
+      function nextMark(m) {return m === 0 ? 1 : m === 1 ? 2 : 0}
+
+      function mark(b, r, c, v) {
+        var before = bingoInfo(b), msgs = [];
+        sm(b, r, c, v);
+        var after = bingoInfo(b);
+        after.rows.forEach(function (n) {if (before.rows.indexOf(n) === -1) msgs.push(t('bingoToast', {line: t('rowBingo', {n: n}), n: n}))});
+        after.cols.forEach(function (n) {if (before.cols.indexOf(n) === -1) msgs.push(t('bingoToast', {line: t('colBingo', {n: n}), n: n}))});
+        if (msgs.length) {toast(msgs.join('  \u00B7  ')); if (navigator.vibrate) navigator.vibrate([15, 40, 15])}
+        popKey = r + '-' + c;
+        afterMark(b);
+      }
+
       function afterMark(b) {
         clearTimeout(lpTmr);
         updateHdr();
         renderSb();   /* Re-renders sidebar to update board scores */
         renderPlay(b);
       }
+
+      /* Keep multiple tabs in step */
+      window.addEventListener('storage', function (e) {
+        if (e.key === KEY) {closeModal(); state = load(); prevBingos = null; render()}
+        else if (e.key === 'jinxo_lang' && e.newValue) {LANG = e.newValue; render(); applyLanguage()}
+      });
 
       render(); applyLanguage();
     })();
