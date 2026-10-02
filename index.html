@@ -810,9 +810,11 @@
     /* ── Toast ── */
     .toast {
       position: fixed;
-      bottom: calc(24px + env(safe-area-inset-bottom, 0));
+      bottom: calc(24px + env(safe-area-inset-bottom, 0px));
       left: 50%;
-      transform: translateX(-50%) translateY(80px);
+      transform: translate(-50%, 16px);
+      opacity: 0;
+      visibility: hidden;
       background: var(--header);
       color: #fff;
       padding: 10px 20px;
@@ -820,7 +822,7 @@
       font-size: 13px;
       font-weight: 600;
       z-index: 60;
-      transition: transform .25s cubic-bezier(.4, 0, .2, 1);
+      transition: transform .25s cubic-bezier(.4, 0, .2, 1), opacity .2s ease, visibility 0s linear .25s;
       pointer-events: none;
       width: max-content;
       max-width: calc(100vw - 32px);
@@ -829,7 +831,10 @@
     }
 
     .toast.show {
-      transform: translateX(-50%) translateY(0)
+      transform: translate(-50%, 0);
+      opacity: 1;
+      visibility: visible;
+      transition: transform .25s cubic-bezier(.4, 0, .2, 1), opacity .2s ease, visibility 0s
     }
 
     /* ── Focus ── */
@@ -1091,21 +1096,195 @@
       }
     }
 
-    .cell.bf {
-      animation: bf .6s ease
+    /* ── Bingo celebration ──
+       Cells of a new line animate in a sweep outward from the tapped cell (--d = delay).
+       Each bingo picks one flavor class on the grid, never the same twice in a row. */
+    .board-grid .cell.cb {
+      z-index: 1;
+      animation: .6s cubic-bezier(.3, .7, .4, 1) var(--d, 0ms) both
     }
 
-    @keyframes bf {
+    .fx-wave .cell.cb {
+      animation-name: fxWave
+    }
+
+    .fx-ripple .cell.cb {
+      animation-name: fxRipple
+    }
+
+    .fx-sheen .cell.cb {
+      animation-name: fxGlow
+    }
+
+    .fx-tilt .cell.cb {
+      animation-name: fxTilt
+    }
+
+    .fx-sheen .cell.cb::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, .7) 50%, transparent 65%);
+      transform: translateX(-110%);
+      animation: fxSheen .7s ease-in-out var(--d, 0ms) both;
+      pointer-events: none
+    }
+
+    @keyframes fxWave {
       0%,
       100% {
-        box-shadow: none;
-        transform: none
+        transform: none;
+        box-shadow: none
       }
 
-      40% {
-        box-shadow: 0 0 0 3px rgba(91, 168, 124, .55);
-        transform: scale(1.04)
+      35% {
+        transform: translateY(-6px) scale(1.035);
+        box-shadow: 0 0 0 3px rgba(91, 168, 124, .55), 0 8px 14px -6px rgba(44, 36, 24, .35)
       }
+    }
+
+    @keyframes fxRipple {
+      0% {
+        box-shadow: 0 0 0 0 rgba(91, 168, 124, .7)
+      }
+
+      30% {
+        transform: scale(1.03)
+      }
+
+      100% {
+        transform: none;
+        box-shadow: 0 0 0 10px rgba(91, 168, 124, 0)
+      }
+    }
+
+    @keyframes fxGlow {
+      0%,
+      100% {
+        box-shadow: none
+      }
+
+      45% {
+        box-shadow: 0 0 0 3px rgba(91, 168, 124, .5)
+      }
+    }
+
+    @keyframes fxSheen {
+      to {
+        transform: translateX(110%)
+      }
+    }
+
+    /* --s alternates ±1 so neighbouring cells tilt opposite ways */
+    @keyframes fxTilt {
+      0%,
+      100% {
+        transform: none;
+        box-shadow: none
+      }
+
+      25% {
+        transform: rotate(calc(-2.5deg * var(--s, 1))) scale(1.04);
+        box-shadow: 0 0 0 3px rgba(91, 168, 124, .5)
+      }
+
+      55% {
+        transform: rotate(calc(1.5deg * var(--s, 1))) scale(1.02)
+      }
+
+      80% {
+        transform: rotate(calc(-.5deg * var(--s, 1)))
+      }
+    }
+
+    .row-labels span,
+    .col-labels span {
+      position: relative
+    }
+
+    .row-labels span.nb,
+    .col-labels span.nb {
+      animation: lblPop .45s cubic-bezier(.3, 1.6, .5, 1) var(--d, 0ms) both
+    }
+
+    @keyframes lblPop {
+      40% {
+        transform: scale(1.35)
+      }
+    }
+
+    /* "+n" that drifts off the line's number */
+    .lbl-pts {
+      position: absolute;
+      top: 50%;
+      font-size: 12px;
+      font-style: normal;
+      font-weight: 800;
+      color: var(--bingo);
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0
+    }
+
+    .row-labels .lbl-pts {
+      left: 50%;
+      animation: ptsRow 1.2s ease-out var(--d, 0ms) both
+    }
+
+    .col-labels .lbl-pts {
+      left: calc(50% + .8em);
+      animation: ptsCol 1.2s ease-out var(--d, 0ms) both
+    }
+
+    @keyframes ptsRow {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -120%)
+      }
+
+      20%,
+      70% {
+        opacity: 1
+      }
+
+      20% {
+        transform: translate(-50%, -175%)
+      }
+
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -250%)
+      }
+    }
+
+    @keyframes ptsCol {
+      0% {
+        opacity: 0;
+        transform: translate(0, -50%)
+      }
+
+      20%,
+      70% {
+        opacity: 1
+      }
+
+      20% {
+        transform: translate(0, -90%)
+      }
+
+      100% {
+        opacity: 0;
+        transform: translate(0, -150%)
+      }
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap
     }
 
     .bv-name {
@@ -1239,6 +1418,7 @@
   <main class="main" id="main"></main>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="sr-only" id="srLive" aria-live="polite"></div>
 
   <div class="confirm-modal" id="confirmModal">
     <div class="cm-card" role="dialog" aria-modal="true" aria-labelledby="cmTitle" aria-describedby="cmDesc">
@@ -1259,8 +1439,8 @@
       function lsSet(k, v) {try {localStorage.setItem(k, v)} catch (e) { } }
       var LANG = lsGet('jinxo_lang') || ((navigator.language || '').toLowerCase().indexOf('ko') === 0 ? 'ko' : 'en');
       var I18N = {
-        en: {new: '+ New', boards: 'Boards', newBoard: '+ New Board', noBoards: 'No boards yet', setup: 'Setup', playing: 'Playing', pts: 'pts', createBoard: 'Create Board', emptyDesc: 'Create a board and fill it with words to start playing.', wordPlaceholder: 'word', startGame: 'Start Game', fillCells: 'Fill each cell with a word, then start.', allCells: 'All cells need a word first', tapCycle: 'Tap: cycle', longPressX: 'Long-press: X', reset: 'Reset', editBoard: 'Edit Board', confirmAction: 'Confirm Action', areYouSure: 'Are you sure?', cancel: 'Cancel', confirm: 'Confirm', deleteBoard: 'Delete Board?', deleteDesc: 'This action cannot be undone.', delete: 'Delete', resetBoard: 'Reset Board?', resetDesc: 'This will clear all circles, stars, and X marks on this board.', editBoardTitle: 'Edit Board?', editDesc: 'Editing the board will reset and clear all current markings.', circled: 'Circles', starred: 'Star circles', rowBingo: 'Row {n} bingo', colBingo: 'Col {n} bingo', boardDefault: 'Board {n}', duplicateWords: 'All words must be unique', menu: 'Menu', close: 'Close', ok: 'OK', longPressXMouse: 'Long-press or right-click: X', scoreTitle: 'Score: {n}', noPoints: 'No points yet — tap a word to circle it.', scoreRules: '● Circle +1 · ★ Star (a special circle) +3\nA full row or column of circles — stars included — adds its number', bingoToast: '{line}! +{n}', renameBoard: 'Rename board'},
-        ko: {new: '+ 새로 만들기', boards: '보드', newBoard: '+ 새 보드', noBoards: '아직 보드가 없습니다', setup: '설정', playing: '게임 중', pts: '점', createBoard: '보드 만들기', emptyDesc: '보드를 만들고 단어를 입력하여 게임을 시작하세요.', wordPlaceholder: '단어', startGame: '게임 시작', fillCells: '각 칸에 단어를 입력한 후 시작하세요.', allCells: '모든 칸에 단어를 입력해주세요.', tapCycle: '탭: 표시 변경', longPressX: '길게 누르기: X', reset: '초기화', editBoard: '보드 수정', confirmAction: '확인', areYouSure: '정말 진행하시겠습니까?', cancel: '취소', confirm: '확인', deleteBoard: '보드를 삭제할까요?', deleteDesc: '이 작업은 되돌릴 수 없습니다.', delete: '삭제', resetBoard: '보드를 초기화할까요?', resetDesc: '이 보드의 모든 동그라미, 별, X 표시가 삭제됩니다.', editBoardTitle: '보드를 수정할까요?', editDesc: '보드를 수정하면 현재 표시가 모두 초기화됩니다.', circled: '동그라미', starred: '별 동그라미', rowBingo: '{n}행 빙고', colBingo: '{n}열 빙고', boardDefault: '보드 {n}', duplicateWords: '중복된 단어는 사용할 수 없습니다', menu: '메뉴', close: '닫기', ok: '확인', longPressXMouse: '길게 누르기 또는 우클릭: X', scoreTitle: '점수: {n}', noPoints: '아직 점수가 없습니다. 단어를 탭해 동그라미를 표시하세요.', scoreRules: '● 동그라미 +1 · ★ 별(특별한 동그라미) +3\n별을 포함해 한 줄이 모두 동그라미면 줄 번호만큼 +', bingoToast: '{line}! +{n}', renameBoard: '보드 이름 변경'}
+        en: {new: '+ New', boards: 'Boards', newBoard: '+ New Board', noBoards: 'No boards yet', setup: 'Setup', playing: 'Playing', pts: 'pts', createBoard: 'Create Board', emptyDesc: 'Create a board and fill it with words to start playing.', wordPlaceholder: 'word', startGame: 'Start Game', fillCells: 'Fill each cell with a word, then start.', allCells: 'All cells need a word first', tapCycle: 'Tap: cycle', longPressX: 'Long-press: X', reset: 'Reset', editBoard: 'Edit Board', confirmAction: 'Confirm Action', areYouSure: 'Are you sure?', cancel: 'Cancel', confirm: 'Confirm', deleteBoard: 'Delete Board?', deleteDesc: 'This action cannot be undone.', delete: 'Delete', resetBoard: 'Reset Board?', resetDesc: 'This will clear all circles, stars, and X marks on this board.', editBoardTitle: 'Edit Board?', editDesc: 'Editing the board will reset and clear all current markings.', circled: 'Circles', starred: 'Star circles', rowBingo: 'Row {n} bingo', colBingo: 'Col {n} bingo', boardDefault: 'Board {n}', duplicateWords: 'All words must be unique', menu: 'Menu', close: 'Close', ok: 'OK', longPressXMouse: 'Long-press or right-click: X', scoreTitle: 'Score: {n}', noPoints: 'No points yet — tap a word to circle it.', scoreRules: '● Circle +1 · ★ Star (a special circle) +3\nA full row or column of circles — stars included — adds its number', bingoSay: '{line}! +{n}', renameBoard: 'Rename board'},
+        ko: {new: '+ 새로 만들기', boards: '보드', newBoard: '+ 새 보드', noBoards: '아직 보드가 없습니다', setup: '설정', playing: '게임 중', pts: '점', createBoard: '보드 만들기', emptyDesc: '보드를 만들고 단어를 입력하여 게임을 시작하세요.', wordPlaceholder: '단어', startGame: '게임 시작', fillCells: '각 칸에 단어를 입력한 후 시작하세요.', allCells: '모든 칸에 단어를 입력해주세요.', tapCycle: '탭: 표시 변경', longPressX: '길게 누르기: X', reset: '초기화', editBoard: '보드 수정', confirmAction: '확인', areYouSure: '정말 진행하시겠습니까?', cancel: '취소', confirm: '확인', deleteBoard: '보드를 삭제할까요?', deleteDesc: '이 작업은 되돌릴 수 없습니다.', delete: '삭제', resetBoard: '보드를 초기화할까요?', resetDesc: '이 보드의 모든 동그라미, 별, X 표시가 삭제됩니다.', editBoardTitle: '보드를 수정할까요?', editDesc: '보드를 수정하면 현재 표시가 모두 초기화됩니다.', circled: '동그라미', starred: '별 동그라미', rowBingo: '{n}행 빙고', colBingo: '{n}열 빙고', boardDefault: '보드 {n}', duplicateWords: '중복된 단어는 사용할 수 없습니다', menu: '메뉴', close: '닫기', ok: '확인', longPressXMouse: '길게 누르기 또는 우클릭: X', scoreTitle: '점수: {n}', noPoints: '아직 점수가 없습니다. 단어를 탭해 동그라미를 표시하세요.', scoreRules: '● 동그라미 +1 · ★ 별(특별한 동그라미) +3\n별을 포함해 한 줄이 모두 동그라미면 줄 번호만큼 +', bingoSay: '{line}! +{n}', renameBoard: '보드 이름 변경'}
       };
       function t(k, v) {var x = I18N[LANG][k] || I18N.en[k] || k; if (v) Object.keys(v).forEach(function (a) {x = x.replace('{' + a + '}', v[a])}); return x}
       function applyLanguage() {document.documentElement.lang = LANG; document.querySelectorAll('[data-i18n]').forEach(function (e) {e.textContent = t(e.getAttribute('data-i18n'))}); document.getElementById('langEn').classList.toggle('active', LANG === 'en'); document.getElementById('langKo').classList.toggle('active', LANG === 'ko'); document.getElementById('menuBtn').setAttribute('aria-label', t('menu')); document.getElementById('closeBtn').setAttribute('aria-label', t('close'))}
@@ -1268,7 +1448,8 @@
 
 
       var KEY = 'jinxo_nks', LP = 450, state = load(),
-        lpTmr = null, lpFired = false, prevBingos = null,
+        lpTmr = null, lpFired = false, celebrate = null, lastFx = -1,
+        FX = ['wave', 'ripple', 'sheen', 'tilt'],
         popKey = null, lastPointer = 'mouse', focusSetup = false, lastScore = null,
         finePointer = window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches;
 
@@ -1290,7 +1471,7 @@
       function createBoard() {
         var b = {id: uid(), name: t('boardDefault', {n: nextNum()}), phase: 'setup', words: {}, marks: {}};
         for (var r = 1; r <= 3; r++)for (var c = 1; c <= 3; c++)b.words[r + '-' + c] = '';
-        state.boards.push(b); state.activeId = b.id; save(); closeSb(); prevBingos = null; focusSetup = true; render();
+        state.boards.push(b); state.activeId = b.id; save(); closeSb(); focusSetup = true; render();
       }
       function gm(b, r, c) {return b.marks[r + '-' + c] || 0}
       function sm(b, r, c, v) {if (v === 0) delete b.marks[r + '-' + c]; else b.marks[r + '-' + c] = v; save()}
@@ -1419,6 +1600,9 @@
       var toastEl = document.getElementById('toast'), toastTmr = null;
       function toast(msg) {clearTimeout(toastTmr); toastEl.textContent = msg; toastEl.classList.add('show'); toastTmr = setTimeout(function () {toastEl.classList.remove('show')}, 2400)}
 
+      var srLive = document.getElementById('srLive');
+      function announce(msg) {srLive.textContent = ''; setTimeout(function () {srLive.textContent = msg}, 50)}
+
       /* ── Render ── */
       var main = document.getElementById('main'), scorePill = document.getElementById('scorePill'), scoreNum = document.getElementById('scoreNum');
 
@@ -1463,7 +1647,7 @@
         });
         list.innerHTML = h;
         list.querySelectorAll('.bi').forEach(function (el) {
-          el.addEventListener('click', function (e) {if (e.target.closest('.bi-del')) return; state.activeId = el.dataset.id; save(); closeSb(); prevBingos = null; render()});
+          el.addEventListener('click', function (e) {if (e.target.closest('.bi-del')) return; state.activeId = el.dataset.id; save(); closeSb(); render()});
           el.addEventListener('keydown', function (e) {if (e.target === el && (e.key === 'Enter' || e.key === ' ')) {e.preventDefault(); el.click()} });
         });
         list.querySelectorAll('.bi-del').forEach(function (btn) {
@@ -1486,9 +1670,7 @@
 
       /* ── Grid: rows 3→1 top→bottom, cols 1→3 left→right ── */
       function gridCells(b, mode) {
-        var h = '', bi = mode === 'play' ? bingoInfo(b) : {rows: [], cols: [], cells: {}}, newB = [];
-        if (prevBingos !== null && mode === 'play') {for (var k in bi.cells) if (!prevBingos[k]) newB.push(k)}
-        if (mode === 'play') {prevBingos = {}; for (var k2 in bi.cells) prevBingos[k2] = 1}
+        var h = '';
         for (var row = 3; row >= 1; row--) {
           for (var col = 1; col <= 3; col++) {
             var key = row + '-' + col, cls = 'cell ' + (mode === 'setup' ? 'st' : 'pl'), w, wv, ind = '';
@@ -1498,13 +1680,14 @@
             } else {
               var m = gm(b, row, col);
               if (m === 1) cls += ' c1'; else if (m === 2) cls += ' c2'; else if (m === 3) cls += ' c3';
-              if (newB.indexOf(key) !== -1) cls += ' bf';
+              var fx = celebrateStyle(row, col), style = '';
+              if (fx) {cls += ' cb'; style = ' style="' + fx + '"'}
               if (key === popKey) cls += ' pop';
               w = esc(gw(b, row, col));
               if (m === 1) ind = '<span class="cind">\u25CF</span>';
               if (m === 2) ind = '<span class="cind">\u2605</span>';
               if (m === 3) ind = '<span class="cind">\u2715</span>';
-              h += '<div class="' + cls + '" data-r="' + row + '" data-c="' + col + '" tabindex="0">' + ind + '<span class="cw' + fitCls(gw(b, row, col)) + '">' + w + '</span></div>';
+              h += '<div class="' + cls + '" data-r="' + row + '" data-c="' + col + '" tabindex="0"' + style + '>' + ind + '<span class="cw' + fitCls(gw(b, row, col)) + '">' + w + '</span></div>';
             }
           }
         }
@@ -1544,14 +1727,29 @@
         };
       }
 
+      /* Sweep delay for a cell on a just-completed line: distance from the tapped cell */
+      function celebrateStyle(row, col) {
+        var cb = celebrate;
+        if (!cb || (cb.rows.indexOf(row) === -1 && cb.cols.indexOf(col) === -1)) return '';
+        var dist = Math.abs(row - cb.r) + Math.abs(col - cb.c);
+        return '--d:' + dist * cb.step + 'ms;--s:' + (dist % 2 ? -1 : 1);
+      }
+
+      function labelHtml(n, done, fresh) {
+        if (!done) return '<span>' + n + '</span>';
+        if (!fresh) return '<span class="bingo">' + n + '</span>';
+        /* the label lands once the sweep has crossed the line */
+        return '<span class="bingo nb" style="--d:' + (2 * celebrate.step + 80) + 'ms">' + n + '<i class="lbl-pts" aria-hidden="true">+' + n + '</i></span>';
+      }
+
       function rowLabelHtml(bi) {
         var h = '';
-        for (var i = 3; i >= 1; i--)h += '<span' + (bi.rows.indexOf(i) !== -1 ? ' class="bingo"' : '') + '>' + i + '</span>';
+        for (var i = 3; i >= 1; i--)h += labelHtml(i, bi.rows.indexOf(i) !== -1, celebrate && celebrate.rows.indexOf(i) !== -1);
         return h;
       }
       function colLabelHtml(bi) {
         var h = '';
-        for (var i = 1; i <= 3; i++)h += '<span' + (bi.cols.indexOf(i) !== -1 ? ' class="bingo"' : '') + '>' + i + '</span>';
+        for (var i = 1; i <= 3; i++)h += labelHtml(i, bi.cols.indexOf(i) !== -1, celebrate && celebrate.cols.indexOf(i) !== -1);
         return h;
       }
 
@@ -1657,7 +1855,6 @@
           b.phase = 'play'; 
           b.marks = {}; 
           save(); 
-          prevBingos = null; 
           render();
         });
 
@@ -1671,7 +1868,7 @@
         var h = '<div class="bv">';
         h += '<div class="board-section">';
         h += nameHtml(b);
-        h += '<div class="board-grid">' + gridCells(b, 'play') + '</div>';
+        h += '<div class="board-grid' + (celebrate ? ' fx-' + celebrate.fx : '') + '">' + gridCells(b, 'play') + '</div>';
         h += '<div class="row-labels">' + rowLabelHtml(bi) + '</div>';
         h += '<div class="col-labels">' + colLabelHtml(bi) + '</div>';
         h += '<div class="board-footer">';
@@ -1682,7 +1879,7 @@
         h += '<div class="sec-btns"><button class="btn-sec" id="resetBtn">' + t('reset') + '</button><button class="btn-sec" id="editBtn">' + t('editBoard') + '</button></div>';
         h += '</div></div></div>';
         main.innerHTML = h;
-        popKey = null;
+        popKey = null; celebrate = null; /* one-shot: later re-renders don't replay it */
         bindRename(b);
         var cells = main.querySelectorAll('.cell.pl');
         /* Bind cells via pointer events */
@@ -1765,7 +1962,6 @@
             onConfirm: function () {
               b.marks = {};
               save();
-              prevBingos = null;
               render();
             }
           });
@@ -1779,7 +1975,6 @@
               b.phase = 'setup';
               b.marks = {};
               save();
-              prevBingos = null;
               render();
             }
           });
@@ -1790,12 +1985,20 @@
       function nextMark(m) {return m === 0 ? 1 : m === 1 ? 2 : 0}
 
       function mark(b, r, c, v) {
-        var before = bingoInfo(b), msgs = [];
+        var before = bingoInfo(b);
         sm(b, r, c, v);
-        var after = bingoInfo(b);
-        after.rows.forEach(function (n) {if (before.rows.indexOf(n) === -1) msgs.push(t('bingoToast', {line: t('rowBingo', {n: n}), n: n}))});
-        after.cols.forEach(function (n) {if (before.cols.indexOf(n) === -1) msgs.push(t('bingoToast', {line: t('colBingo', {n: n}), n: n}))});
-        if (msgs.length) {toast(msgs.join('  \u00B7  ')); if (navigator.vibrate) navigator.vibrate([15, 40, 15])}
+        var after = bingoInfo(b),
+          rows = after.rows.filter(function (n) {return before.rows.indexOf(n) === -1}),
+          cols = after.cols.filter(function (n) {return before.cols.indexOf(n) === -1});
+        if (rows.length || cols.length) {
+          var fx = Math.floor(Math.random() * (FX.length - 1)); if (fx >= lastFx) fx++; /* any flavor but the last one */
+          if (lastFx < 0) fx = Math.floor(Math.random() * FX.length);
+          lastFx = fx;
+          celebrate = {rows: rows, cols: cols, r: r, c: c, fx: FX[fx], step: 55 + Math.round(Math.random() * 45)};
+          announce(rows.map(function (n) {return t('bingoSay', {line: t('rowBingo', {n: n}), n: n})})
+            .concat(cols.map(function (n) {return t('bingoSay', {line: t('colBingo', {n: n}), n: n})})).join(', '));
+          if (navigator.vibrate) navigator.vibrate([15, 40, 15]);
+        }
         popKey = r + '-' + c;
         afterMark(b);
       }
@@ -1809,7 +2012,7 @@
 
       /* Keep multiple tabs in step */
       window.addEventListener('storage', function (e) {
-        if (e.key === KEY) {closeModal(); state = load(); prevBingos = null; render()}
+        if (e.key === KEY) {closeModal(); state = load(); render()}
         else if (e.key === 'jinxo_lang' && e.newValue) {LANG = e.newValue; render(); applyLanguage()}
       });
 
